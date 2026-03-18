@@ -145,6 +145,8 @@ $adminHeaderSubtitle = 'Review and moderate all posted thoughts';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/jpeg" href="/favicon.jpg">
+    <link rel="shortcut icon" href="/favicon.jpg">
     <title>Admin Dashboard - Unsaid Thoughts</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
