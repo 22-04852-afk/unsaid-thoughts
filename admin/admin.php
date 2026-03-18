@@ -99,6 +99,9 @@ $result = $stmt->get_result();
 $thoughts = $result->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
 
+$showingFrom = $totalRows > 0 ? ($offset + 1) : 0;
+$showingTo = $totalRows > 0 ? min($offset + count($thoughts), $totalRows) : 0;
+
 $stats = [
     'total_thoughts' => 0,
     'today_thoughts' => 0,
@@ -158,23 +161,66 @@ $adminHeaderSubtitle = 'Review and moderate all posted thoughts';
 
         .wrap {
             width: min(1100px, 100% - 2rem);
-            margin: 1rem auto 2rem;
+            margin: 0.9rem auto 2rem;
+        }
+
+        .dashboard-head {
+            border: 1px solid var(--admin-line);
+            background: var(--admin-surface);
+            border-radius: var(--admin-card-radius);
+            box-shadow: var(--admin-card-shadow);
+            backdrop-filter: blur(4px);
+            padding: 0.9rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .dashboard-kicker {
+            color: var(--admin-muted);
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.65px;
+            font-weight: 800;
+            margin-bottom: 0.3rem;
+        }
+
+        .dashboard-title {
+            color: var(--admin-brand-strong);
+            font-size: 1.08rem;
+            font-weight: 900;
+            margin-bottom: 0.28rem;
+        }
+
+        .dashboard-sub {
+            color: var(--admin-muted);
+            font-size: 0.86rem;
         }
 
         .stats {
-            margin-top: 0.9rem;
+            margin-top: 0.15rem;
             display: grid;
             grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 0.6rem;
+            gap: 0.72rem;
         }
 
         .stat-card {
             border: 1px solid var(--admin-line);
             background: var(--admin-surface);
             border-radius: var(--admin-card-radius);
-            padding: 0.75rem 0.85rem;
+            padding: 0.82rem 0.9rem;
             box-shadow: var(--admin-card-shadow);
             backdrop-filter: blur(4px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--admin-brand) 0%, var(--admin-brand-strong) 100%);
         }
 
         .stat-label {
@@ -195,8 +241,13 @@ $adminHeaderSubtitle = 'Review and moderate all posted thoughts';
         .search-box {
             display: grid;
             grid-template-columns: 1fr auto;
-            gap: 0.5rem;
-            margin: 0.95rem 0 0.9rem;
+            gap: 0.55rem;
+            margin: 0.95rem 0 1rem;
+            padding: 0.6rem;
+            border: 1px solid var(--admin-line);
+            border-radius: var(--admin-card-radius);
+            background: var(--admin-surface);
+            box-shadow: var(--admin-card-shadow);
         }
 
         .search-box input {
@@ -241,16 +292,29 @@ $adminHeaderSubtitle = 'Review and moderate all posted thoughts';
 
         .cards {
             display: grid;
-            gap: 0.95rem;
+            gap: 1rem;
         }
 
         .card {
             background: var(--admin-surface);
             border: 1px solid var(--admin-line);
             border-radius: var(--admin-card-radius);
-            padding: 0.95rem;
+            padding: 1rem;
             box-shadow: var(--admin-card-shadow);
             backdrop-filter: blur(4px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(180deg, var(--admin-brand) 0%, var(--admin-brand-strong) 100%);
+            opacity: 0.22;
         }
 
         .row {
@@ -403,6 +467,15 @@ $adminHeaderSubtitle = 'Review and moderate all posted thoughts';
             gap: 0.5rem;
             justify-content: center;
             margin-top: 1.1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .pager-status {
+            color: var(--admin-muted);
+            font-size: 0.83rem;
+            font-weight: 700;
+            padding: 0.35rem 0.5rem;
         }
 
         .pager a {
@@ -432,6 +505,12 @@ $adminHeaderSubtitle = 'Review and moderate all posted thoughts';
     <?php include __DIR__ . '/nav.php'; ?>
 
     <div class="wrap">
+        <section class="dashboard-head">
+            <p class="dashboard-kicker">Dashboard Overview</p>
+            <h2 class="dashboard-title">Content Moderation Panel</h2>
+            <p class="dashboard-sub">Showing <?php echo number_format($showingFrom); ?>-<?php echo number_format($showingTo); ?> of <?php echo number_format($totalRows); ?> thoughts</p>
+        </section>
+
         <div class="stats">
             <article class="stat-card">
                 <p class="stat-label">Total Thoughts</p>
@@ -514,6 +593,7 @@ $adminHeaderSubtitle = 'Review and moderate all posted thoughts';
             <?php if ($page > 1): ?>
                 <a href="admin.php?page=<?php echo $page - 1; ?>&search=<?php echo urlencode($search); ?>">Previous</a>
             <?php endif; ?>
+            <span class="pager-status">Page <?php echo number_format($page); ?> of <?php echo number_format($totalPages); ?></span>
             <?php if ($page < $totalPages): ?>
                 <a href="admin.php?page=<?php echo $page + 1; ?>&search=<?php echo urlencode($search); ?>">Next</a>
             <?php endif; ?>

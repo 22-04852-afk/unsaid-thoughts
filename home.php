@@ -558,26 +558,6 @@ function formatDate($dateString) {
             font-size: 0.9rem;
         }
 
-        .explore-more-btn {
-            display: block;
-            margin: 1.5rem auto;
-            padding: 0.9rem 2rem;
-            background: linear-gradient(135deg, #FFB6D9 0%, #FF91C5 100%);
-            color: white;
-            border: none;
-            border-radius: 50px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 0.95rem;
-            box-shadow: 0 4px 15px rgba(255, 105, 180, 0.2);
-        }
-
-        .explore-more-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255, 105, 180, 0.3);
-        }
-
         /* Container */
         .container {
             padding-bottom: 90px;
@@ -727,8 +707,6 @@ function formatDate($dateString) {
             <?php endif; ?>
         </div>
 
-        <!-- Explore More Button -->
-        <button class="explore-more-btn" onclick="location.reload()">Explore more moods</button>
     </div>
 
     <?php include 'nav.php'; ?>
