@@ -12,11 +12,52 @@
         overflow: hidden;
     }
 
+    .back-btn {
+        position: absolute;
+        top: 14px;
+        left: 14px;
+        z-index: 3;
+        border: 1px solid rgba(255, 255, 255, 0.78);
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(255, 242, 249, 0.96) 100%);
+        color: #D72684;
+        font-size: 0.8rem;
+        font-weight: 800;
+        text-decoration: none;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        padding: 0.42rem 0.82rem;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 34px;
+        line-height: 1;
+        backdrop-filter: blur(4px);
+        box-shadow: 0 6px 16px rgba(190, 28, 107, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        transition: transform 0.22s ease, background 0.22s ease, color 0.22s ease, box-shadow 0.22s ease;
+    }
+
+    .back-btn:hover {
+        background: linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(255, 238, 247, 1) 100%);
+        color: #BD176F;
+        transform: translateY(-1px);
+        box-shadow: 0 10px 24px rgba(190, 28, 107, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    }
+
+    .back-btn:active {
+        transform: translateY(0) scale(0.98);
+    }
+
+    .back-btn:focus-visible {
+        outline: 3px solid rgba(255, 255, 255, 0.95);
+        outline-offset: 2px;
+    }
+
     header::before {
         content: '★';
         position: absolute;
         top: 10px;
-        left: 20px;
+        left: 110px;
         font-size: 1.5rem;
         opacity: 0.4;
         animation: float 4s ease-in-out infinite;
@@ -66,6 +107,14 @@
             padding: 2rem 1rem;
         }
 
+        .back-btn {
+            top: 10px;
+            left: 10px;
+            font-size: 0.74rem;
+            padding: 0.38rem 0.7rem;
+            min-height: 32px;
+        }
+
         header h1 {
             font-size: 1.8rem;
         }
@@ -78,6 +127,7 @@
 </style>
 
 <header>
+    <a class="back-btn" href="home.php" onclick="if (window.history.length > 1) { event.preventDefault(); window.history.back(); }" aria-label="Go back">Back</a>
     <h1><?php echo isset($header_title) ? $header_title : '⊹ Unsaid Thoughts'; ?></h1>
     <p><?php echo isset($header_subtitle) ? $header_subtitle : 'Everything you never said'; ?></p>
 </header>
