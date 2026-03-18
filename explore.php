@@ -146,7 +146,7 @@ function formatDate($dateString) {
             background: linear-gradient(135deg, #FFF9FC 0%, #FFF5F8 100%);
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             min-height: 100vh;
-            padding-bottom: 2rem;
+            padding-bottom: 4.5rem;
         }
 
         /* Navigation */
@@ -182,7 +182,13 @@ function formatDate($dateString) {
         .container {
             max-width: 600px;
             margin: 2rem auto;
-            padding: 0 1rem 100px 1rem;
+            padding: 0 1rem 72px 1rem;
+        }
+
+        .see-more-wrap {
+            text-align: center;
+            margin-top: 2rem;
+            margin-bottom: 0.2rem;
         }
 
         /* Success Message */
@@ -354,7 +360,7 @@ function formatDate($dateString) {
 
             .container {
                 max-width: 100%;
-                padding: 0 0.8rem;
+                padding: 0 0.8rem calc(78px + env(safe-area-inset-bottom));
             }
 
             .thought-card {
@@ -368,6 +374,11 @@ function formatDate($dateString) {
             .nav-btn {
                 padding: 0.5rem 0.8rem;
                 font-size: 0.85rem;
+            }
+
+            .see-more-wrap {
+                margin-top: 1.4rem;
+                margin-bottom: calc(0.1rem + env(safe-area-inset-bottom));
             }
         }
 
@@ -458,7 +469,7 @@ function formatDate($dateString) {
             <?php endforeach; ?>
             
             <?php if (count($thoughts) > 5): ?>
-                <div style="text-align: center; margin-top: 2rem;">
+                <div class="see-more-wrap">
                     <button id="seeMoreBtn" class="nav-btn" onclick="toggleMoreThoughts()" style="background: linear-gradient(135deg, #FFB6D9 0%, #FF91C5 100%); color: white; border: none; padding: 0.8rem 2rem;">
                         ✦ See More
                     </button>
