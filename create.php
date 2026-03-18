@@ -229,13 +229,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             margin-left: 0.3rem;
         }
 
-        /* Song Search Styles */
-        .song-search-container {
-            position: relative;
-            width: 100%;
-        }
-
-        .song-search-input {
+        /* Song Dropdown Styles */
+        .song-dropdown {
             width: 100%;
             padding: 0.8rem;
             border: 1.5px solid #FFE5F0;
@@ -243,89 +238,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             font-family: inherit;
             font-size: 0.95rem;
             transition: all 0.3s ease;
+            background: #fff;
         }
 
-        .song-search-input:focus {
+        .song-dropdown:focus {
             outline: none;
             border-color: #FFB6D9;
             box-shadow: 0 0 0 3px rgba(255, 182, 217, 0.1);
             background-color: #FFFBFD;
-        }
-
-        .search-results {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: white;
-            border: 1.5px solid #FFB6D9;
-            border-top: none;
-            border-radius: 0 0 8px 8px;
-            max-height: 300px;
-            overflow-y: auto;
-            z-index: 100;
-            display: none;
-            box-shadow: 0 4px 12px rgba(255, 105, 180, 0.15);
-        }
-
-        .search-results.active {
-            display: block;
-        }
-
-        .search-result-item {
-            padding: 0.8rem;
-            border-bottom: 1px solid #FFE5F0;
-            cursor: pointer;
-            transition: background 0.2s ease;
-            display: flex;
-            gap: 0.8rem;
-            align-items: flex-start;
-        }
-
-        .search-result-item:last-child {
-            border-bottom: none;
-        }
-
-        .search-result-item:hover {
-            background-color: #FFF5F8;
-        }
-
-        .search-result-thumbnail {
-            width: 40px;
-            height: 40px;
-            border-radius: 4px;
-            object-fit: cover;
-            flex-shrink: 0;
-        }
-
-        .search-result-content {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .search-result-title {
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 0.2rem;
-        }
-
-        .search-result-artist {
-            font-size: 0.85rem;
-            color: #999;
-        }
-
-        .search-loading {
-            padding: 1rem;
-            text-align: center;
-            color: #999;
-            font-size: 0.9rem;
-        }
-
-        .search-no-results {
-            padding: 1rem;
-            text-align: center;
-            color: #999;
-            font-size: 0.9rem;
         }
 
         .selected-song {
@@ -485,16 +405,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
 
                 <div class="form-group">
-                    <label for="song_search">Search for a Song</label>
-                    <div class="song-search-container">
-                        <input 
-                            type="text" 
-                            id="song_search" 
-                            class="song-search-input"
-                            placeholder="Search by song title or artist..."
-                            autocomplete="off">
-                        <div class="search-results" id="searchResults"></div>
-                    </div>
+                    <label for="song_select">Choose an Available Song</label>
+                    <select id="song_select" class="song-dropdown">
+                        <option value="">Loading songs...</option>
+                    </select>
                 </div>
 
                 <!-- Selected song display -->
@@ -566,9 +480,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             });
         }
 
-        let searchTimeout;
-        const searchInput = document.getElementById('song_search');
-        const searchResults = document.getElementById('searchResults');
+        const songSelect = document.getElementById('song_select');
         let allSongs = [];
 
         function updateCharCount(textarea) {
@@ -581,80 +493,69 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             try {
                 const response = await fetch(`search_songs.php?all=1`);
                 const data = await response.json();
-                allSongs = data.results;
+                allSongs = Array.isArray(data.results) ? data.results : [];
+                populateSongDropdown(allSongs);
             } catch (error) {
                 console.error('Error loading songs:', error);
+                populateSongDropdown([]);
             }
         }
 
-        // Show all songs when input is focused
-        searchInput.addEventListener('focus', function() {
-            if (this.value.trim().length === 0) {
-                displaySearchResults(allSongs);
-            }
-        });
+        function populateSongDropdown(songs) {
+            songSelect.innerHTML = '<option value="">Select a song (optional)</option>';
 
-        // Song search functionality
-        searchInput.addEventListener('input', function() {
-            const query = this.value.trim();
-            
-            clearTimeout(searchTimeout);
-            
-            if (query.length === 0) {
-                displaySearchResults(allSongs);
+            if (!songs.length) {
+                const emptyOption = document.createElement('option');
+                emptyOption.value = '';
+                emptyOption.textContent = 'No available songs';
+                emptyOption.disabled = true;
+                songSelect.appendChild(emptyOption);
                 return;
             }
 
-            if (query.length < 2) {
-                searchResults.classList.remove('active');
-                return;
-            }
-            
-            searchResults.innerHTML = '<div class="search-loading">🔍 Searching...</div>';
-            searchResults.classList.add('active');
-            
-            searchTimeout = setTimeout(() => {
-                fetch(`search_songs.php?q=${encodeURIComponent(query)}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        displaySearchResults(data.results);
-                    })
-                    .catch(error => {
-                        console.error('Search error:', error);
-                        searchResults.innerHTML = '<div class="search-no-results">Error searching songs</div>';
-                    });
-            }, 300);
-        });
+            const TOP_PICKS_COUNT = 5;
+            const topPicks = songs.slice(0, Math.min(TOP_PICKS_COUNT, songs.length));
 
-        function displaySearchResults(results) {
-            if (results.length === 0) {
-                searchResults.innerHTML = '<div class="search-no-results">No songs found</div>';
-                return;
+            if (topPicks.length) {
+                const topPicksGroup = document.createElement('optgroup');
+                topPicksGroup.label = 'Top picks';
+
+                topPicks.forEach((song, index) => {
+                    const option = document.createElement('option');
+                    option.value = String(index);
+                    option.textContent = `${song.title} - ${song.artist}`;
+                    topPicksGroup.appendChild(option);
+                });
+
+                songSelect.appendChild(topPicksGroup);
             }
-            
-            let html = '';
-            results.forEach((song, index) => {
-                const thumbnail = song.thumbnail ? `<img src="${escapeHtml(song.thumbnail)}" alt="song" class="search-result-thumbnail">` : '<div class="search-result-thumbnail" style="background: #FFE5F0;"></div>';
-                
-                html += `
-                    <div class="search-result-item" onclick="selectSong(${index})">
-                        ${song.source === 'youtube' ? thumbnail : ''}
-                        <div class="search-result-content">
-                            <div class="search-result-title">${escapeHtml(song.title)}</div>
-                            <div class="search-result-artist">${escapeHtml(song.artist)}${song.source === 'youtube' ? ' <span style="font-size: 0.75rem; color: #FFB6D9;">YouTube</span>' : ''}</div>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            searchResults.innerHTML = html;
-            
-            // Store results globally for selection
-            window.searchResults = results;
+
+            const remainingSongs = songs.slice(topPicks.length);
+            if (remainingSongs.length) {
+                const allSongsGroup = document.createElement('optgroup');
+                allSongsGroup.label = 'All songs';
+
+                remainingSongs.forEach((song, index) => {
+                    const option = document.createElement('option');
+                    option.value = String(index + topPicks.length);
+                    option.textContent = `${song.title} - ${song.artist}`;
+                    allSongsGroup.appendChild(option);
+                });
+
+                songSelect.appendChild(allSongsGroup);
+            }
         }
 
-        function selectSong(index) {
-            const song = window.searchResults[index];
+        songSelect.addEventListener('change', function() {
+            if (this.value === '') {
+                clearSelectedSong(false);
+                return;
+            }
+
+            const song = allSongs[Number(this.value)];
+            if (!song) {
+                return;
+            }
             
             document.getElementById('song_title').value = song.title;
             document.getElementById('song_artist').value = song.artist;
@@ -664,39 +565,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             document.getElementById('selectedSongTitle').textContent = song.title;
             document.getElementById('selectedSongArtist').textContent = song.artist;
             document.getElementById('selectedSong').classList.add('active');
-            
-            // Hide search results
-            searchResults.classList.remove('active');
-            searchInput.value = '';
-        }
 
-        function clearSelectedSong() {
+            this.blur();
+        });
+
+        function clearSelectedSong(shouldFocus = true) {
             document.getElementById('song_title').value = '';
             document.getElementById('song_artist').value = '';
             document.getElementById('song_link').value = '';
             document.getElementById('selectedSong').classList.remove('active');
-            searchInput.value = '';
-            searchResults.classList.remove('active');
-            searchInput.focus();
-        }
 
-        function escapeHtml(text) {
-            const map = {
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;',
-                "'": '&#039;'
-            };
-            return text.replace(/[&<>"']/g, m => map[m]);
-        }
-
-        // Close search results when clicking outside
-        document.addEventListener('click', function(event) {
-            if (!event.target.closest('.song-search-container')) {
-                searchResults.classList.remove('active');
+            if (songSelect) {
+                songSelect.value = '';
+                if (shouldFocus) {
+                    songSelect.focus();
+                }
             }
-        });
+        }
 
         // Load all songs when page loads
         window.addEventListener('load', function() {

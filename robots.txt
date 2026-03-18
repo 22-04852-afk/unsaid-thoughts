@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://unsaidthoughts.rf.gd/sitemap.xml
