@@ -648,7 +648,7 @@ function formatDate($dateString) {
             <div class="featured-content">
                 <span class="featured-label">✦ Your Safe Haven ✦</span>
                 <h2 class="featured-title">Share What You're Really Feeling</h2>
-                <p class="featured-description">No judgment, no names, just authentic thoughts and feelings from people like you. Let it all out!</p>
+                <p class="featured-description">Share your thoughts safely.</p>
             </div>
         </div>
 

@@ -102,7 +102,8 @@ $stmt->close();
 $stats = [
     'total_thoughts' => 0,
     'today_thoughts' => 0,
-    'total_reactions' => 0
+    'total_reactions' => 0,
+    'total_visits' => 0
 ];
 
 $statsResult = $conn->query("SELECT COUNT(*) AS total_thoughts, SUM(CASE WHEN DATE(created_at) = CURDATE() THEN 1 ELSE 0 END) AS today_thoughts FROM thoughts");
@@ -116,6 +117,22 @@ $reactionStats = $conn->query('SELECT COUNT(*) AS total_reactions FROM reactions
 if ($reactionStats) {
     $reactionRow = $reactionStats->fetch_assoc();
     $stats['total_reactions'] = (int)($reactionRow['total_reactions'] ?? 0);
+}
+
+$conn->query("CREATE TABLE IF NOT EXISTS unique_visits (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id VARCHAR(64) NOT NULL UNIQUE,
+    first_seen TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_seen TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    user_agent VARCHAR(255) NULL,
+    ip_hash CHAR(64) NULL,
+    INDEX idx_first_seen (first_seen)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+$visitStats = $conn->query('SELECT COUNT(*) AS total_visits FROM unique_visits');
+if ($visitStats) {
+    $visitRow = $visitStats->fetch_assoc();
+    $stats['total_visits'] = (int)($visitRow['total_visits'] ?? 0);
 }
 
 $csrfToken = adminCsrfToken();
@@ -398,6 +415,10 @@ $adminHeaderSubtitle = 'Review and moderate all posted thoughts';
 
         .muted { color: var(--admin-muted); font-size: 0.78rem; }
 
+        @media (max-width: 980px) {
+            .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+
         @media (max-width: 720px) {
             .stats { grid-template-columns: 1fr; }
             .grid3 { grid-template-columns: 1fr; }
@@ -419,8 +440,8 @@ $adminHeaderSubtitle = 'Review and moderate all posted thoughts';
                 <p class="stat-value"><?php echo number_format($stats['today_thoughts']); ?></p>
             </article>
             <article class="stat-card">
-                <p class="stat-label">Total Reactions</p>
-                <p class="stat-value"><?php echo number_format($stats['total_reactions']); ?></p>
+                <p class="stat-label">Total Visits</p>
+                <p class="stat-value"><?php echo number_format($stats['total_visits']); ?></p>
             </article>
         </div>
 
