@@ -6,4 +6,4 @@
  * your very first admin account, then clear it afterwards.
  */
 
-define('ADMIN_BOOTSTRAP_KEY', '');
+define('ADMIN_BOOTSTRAP_KEY', ''); 
