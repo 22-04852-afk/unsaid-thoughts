@@ -1,13 +1,14 @@
-<?php
+﻿<?php
+require_once 'db_config.php';
 /**
  * Test home.php database queries
  */
 
 require_once 'config_session.php';
 
-$conn = new mysqli('localhost', 'root', '', 'unsaid_thoughts');
+$conn = dbConnect(true);
 if ($conn->connect_error) {
-    die('❌ Database connection failed: ' . $conn->connect_error);
+    die('âŒ Database connection failed: ' . $conn->connect_error);
 }
 $conn->set_charset("utf8mb4");
 
@@ -35,7 +36,7 @@ try {
     
     $result = $conn->query($query);
     if (!$result) {
-        die('❌ Query failed: ' . $conn->error);
+        die('âŒ Query failed: ' . $conn->error);
     }
     
     $thoughts = [];
@@ -59,7 +60,7 @@ try {
         }
     }
     
-    echo "   ✅ Found " . count($thoughts) . " thoughts\n\n";
+    echo "   âœ… Found " . count($thoughts) . " thoughts\n\n";
     
     // Test 2: Fetch reactions for each thought
     echo "2. Fetching reaction counts...\n";
@@ -74,7 +75,7 @@ try {
             $thoughts[$thought_id]['reactions'][$reaction_row['type']] = (int)$reaction_row['count'];
             $count++;
         }
-        echo "   ✅ Thought #" . $thought_id . ": " . $count . " reaction types\n";
+        echo "   âœ… Thought #" . $thought_id . ": " . $count . " reaction types\n";
     }
     
     echo "\n3. Sample thought data:\n";
@@ -84,16 +85,17 @@ try {
         echo "   Song: " . $sample['song']['title'] . " by " . $sample['song']['artist'] . "\n";
     }
     echo "   Reactions: ";
-    echo "❤️ " . $sample['reactions']['heart'] . " ";
-    echo "🤗 " . $sample['reactions']['hug'] . " ";
-    echo "💔 " . $sample['reactions']['hurt'] . " ";
-    echo "🌙 " . $sample['reactions']['moon'] . "\n";
+    echo "â¤ï¸ " . $sample['reactions']['heart'] . " ";
+    echo "ðŸ¤— " . $sample['reactions']['hug'] . " ";
+    echo "ðŸ’” " . $sample['reactions']['hurt'] . " ";
+    echo "ðŸŒ™ " . $sample['reactions']['moon'] . "\n";
     
-    echo "\n✅ All tests passed! home.php queries working correctly.\n";
+    echo "\nâœ… All tests passed! home.php queries working correctly.\n";
     
 } catch (Exception $e) {
-    echo "❌ Error: " . $e->getMessage() . "\n";
+    echo "âŒ Error: " . $e->getMessage() . "\n";
 }
 
 $conn->close();
 ?>
+

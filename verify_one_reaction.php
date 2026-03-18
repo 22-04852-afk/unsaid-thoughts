@@ -1,4 +1,5 @@
-<?php
+﻿<?php
+require_once 'db_config.php';
 /**
  * Verify One Reaction Per Post System
  * Checks that users can only have one reaction per post
@@ -6,9 +7,9 @@
 
 require_once 'config_session.php';
 
-$conn = new mysqli('localhost', 'root', '', 'unsaid_thoughts');
+$conn = dbConnect(true);
 if ($conn->connect_error) {
-    die('❌ Database connection failed: ' . $conn->connect_error);
+    die('âŒ Database connection failed: ' . $conn->connect_error);
 }
 $conn->set_charset("utf8mb4");
 
@@ -34,10 +35,10 @@ $unique_key = $conn->query("SELECT * FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS W
 if ($unique_key && $unique_key->num_rows > 0) {
     $row = $unique_key->fetch_assoc();
     if (strpos($row['CONSTRAINT_NAME'], 'unique_user_post') !== false) {
-        echo "   ✅ UNIQUE constraint on (thought_id, user_id) exists\n";
+        echo "   âœ… UNIQUE constraint on (thought_id, user_id) exists\n";
     }
 } else {
-    echo "   ⚠️  Check UNIQUE constraint manually\n";
+    echo "   âš ï¸  Check UNIQUE constraint manually\n";
 }
 
 // 2. Test single reaction per post
@@ -58,7 +59,7 @@ if ($thoughts_result && $thoughts_result->num_rows > 0) {
         $stmt1->bind_param("iss", $test_thought_id, $current_user, $type1);
         
         if ($stmt1->execute()) {
-            echo "   ✅ Inserted heart reaction\n";
+            echo "   âœ… Inserted heart reaction\n";
             
             // Try second reaction (different type) - should fail due to UNIQUE constraint
             $stmt2 = $conn->prepare("INSERT INTO reactions (thought_id, user_id, type) VALUES (?, ?, ?)");
@@ -67,9 +68,9 @@ if ($thoughts_result && $thoughts_result->num_rows > 0) {
             
             try {
                 $stmt2->execute();
-                echo "   ❌ ERROR: Second reaction was allowed!\n";
+                echo "   âŒ ERROR: Second reaction was allowed!\n";
             } catch (Exception $e) {
-                echo "   ✅ Second reaction (hug) correctly blocked - UNIQUE constraint working\n";
+                echo "   âœ… Second reaction (hug) correctly blocked - UNIQUE constraint working\n";
             }
             
             // Test UPDATE (changing reaction type)
@@ -78,7 +79,7 @@ if ($thoughts_result && $thoughts_result->num_rows > 0) {
                 $new_type = 'moon';
                 $stmt3->bind_param("sis", $new_type, $test_thought_id, $current_user);
                 if ($stmt3->execute()) {
-                    echo "   ✅ Changed reaction from heart to moon (UPDATE works)\n";
+                    echo "   âœ… Changed reaction from heart to moon (UPDATE works)\n";
                 }
             } catch (Exception $e) {
                 // Silent
@@ -89,17 +90,17 @@ if ($thoughts_result && $thoughts_result->num_rows > 0) {
                 $stmt4 = $conn->prepare("DELETE FROM reactions WHERE thought_id = ? AND user_id = ?");
                 $stmt4->bind_param("is", $test_thought_id, $current_user);
                 if ($stmt4->execute()) {
-                    echo "   ✅ Deleted reaction (can remove reaction)\n";
+                    echo "   âœ… Deleted reaction (can remove reaction)\n";
                 }
             } catch (Exception $e) {
                 // Silent
             }
         }
     } catch (Exception $e) {
-        echo "   ❌ Error during test: " . $e->getMessage() . "\n";
+        echo "   âŒ Error during test: " . $e->getMessage() . "\n";
     }
 } else {
-    echo "   ⚠️ No thoughts in database to test with\n";
+    echo "   âš ï¸ No thoughts in database to test with\n";
 }
 
 // 3. Check current state
@@ -125,12 +126,12 @@ if ($stats && $stats->num_rows > 0) {
         HAVING count > 1
     ");
     if ($duplicates->num_rows == 0) {
-        echo "   ✅ No user has multiple reactions on same post\n";
+        echo "   âœ… No user has multiple reactions on same post\n";
     } else {
-        echo "   ❌ WARNING: Found users with multiple reactions on same post!\n";
+        echo "   âŒ WARNING: Found users with multiple reactions on same post!\n";
     }
 } else {
-    echo "   ⚠️ No reactions in database yet\n";
+    echo "   âš ï¸ No reactions in database yet\n";
 }
 
 // 4. Test scenario
@@ -150,7 +151,7 @@ $stmt->bind_param("iss", $test_thought_id, $test_user, $type);
 if ($stmt->execute()) {
     $result = $conn->query("SELECT type FROM reactions WHERE thought_id = " . $test_thought_id . " AND user_id = '" . $conn->real_escape_string($test_user) . "'");
     $row = $result->fetch_assoc();
-    echo "   ✅ Step 1: Reacted with " . $row['type'] . "\n";
+    echo "   âœ… Step 1: Reacted with " . $row['type'] . "\n";
 }
 
 // Step 2: Change to moon
@@ -161,10 +162,10 @@ try {
     if ($stmt2->execute()) {
         $result = $conn->query("SELECT type FROM reactions WHERE thought_id = " . $test_thought_id . " AND user_id = '" . $conn->real_escape_string($test_user) . "'");
         $row = $result->fetch_assoc();
-        echo "   ✅ Step 2: Changed reaction to " . $row['type'] . "\n";
+        echo "   âœ… Step 2: Changed reaction to " . $row['type'] . "\n";
     }
 } catch (Exception $e) {
-    echo "   ⚠️  Step 2 had an error\n";
+    echo "   âš ï¸  Step 2 had an error\n";
 }
 
 // Step 3: Remove
@@ -174,18 +175,19 @@ try {
     if ($stmt3->execute()) {
         $result = $conn->query("SELECT COUNT(*) as count FROM reactions WHERE thought_id = " . $test_thought_id . " AND user_id = '" . $conn->real_escape_string($test_user) . "'");
         $row = $result->fetch_assoc();
-        echo "   ✅ Step 3: Removed reaction (count: " . $row['count'] . ")\n";
+        echo "   âœ… Step 3: Removed reaction (count: " . $row['count'] . ")\n";
     }
 } catch (Exception $e) {
-    echo "   ⚠️  Step 3 had an error\n";
+    echo "   âš ï¸  Step 3 had an error\n";
 }
 
 echo "\n=== VERIFICATION COMPLETE ===\n";
 echo "\nSystem Status:\n";
-echo "✅ Database enforces one reaction per user per post\n";
-echo "✅ Users can switch between reactions (UPDATE)\n";
-echo "✅ Users can remove reactions (DELETE)\n";
-echo "✅ Multiple reaction types cannot coexist for same user on same post\n";
+echo "âœ… Database enforces one reaction per user per post\n";
+echo "âœ… Users can switch between reactions (UPDATE)\n";
+echo "âœ… Users can remove reactions (DELETE)\n";
+echo "âœ… Multiple reaction types cannot coexist for same user on same post\n";
 
 $conn->close();
 ?>
+

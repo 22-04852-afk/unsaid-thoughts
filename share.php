@@ -1,12 +1,10 @@
 <?php
 // Include session config for user tracking
 require_once 'config_session.php';
+require_once 'db_config.php';
 
 // Database connection
-$conn = new mysqli('localhost', 'root', '', 'unsaid_thoughts');
-if ($conn->connect_error) {
-    die('❌ Database connection failed: ' . $conn->connect_error);
-}
+$conn = dbConnect(true);
 $conn->set_charset("utf8mb4");
 
 // Get current user ID

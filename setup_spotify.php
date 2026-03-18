@@ -1,15 +1,16 @@
-<?php
+﻿<?php
+require_once 'db_config.php';
 /**
  * Fetch Spotify preview URLs (30-second clips)
  * These are accessible without authentication
  */
 
-echo "🎵 Fetching Spotify preview URLs...\n";
+echo "ðŸŽµ Fetching Spotify preview URLs...\n";
 echo str_repeat("=", 70) . "\n\n";
 
-$conn = new mysqli('localhost', 'root', '', 'unsaid_thoughts');
+$conn = dbConnect(true);
 if ($conn->connect_error) {
-    die("❌ Connection failed\n");
+    die("âŒ Connection failed\n");
 }
 
 // Get all unique songs
@@ -50,22 +51,22 @@ foreach ($songs as $song) {
             $stmt->execute();
             
             if ($stmt->affected_rows > 0) {
-                echo "✅ $title - $artist\n";
+                echo "âœ… $title - $artist\n";
                 $updated++;
             }
             $stmt->close();
         } else {
-            echo "⏭️  $title - $artist (No preview)\n";
+            echo "â­ï¸  $title - $artist (No preview)\n";
         }
     } else {
-        echo "⏭️  $title - $artist (API timeout)\n";
+        echo "â­ï¸  $title - $artist (API timeout)\n";
     }
     
     usleep(200000); // 0.2s delay to avoid rate limiting
 }
 
 echo "\n" . str_repeat("=", 70) . "\n";
-echo "✅ Updated $updated / $total songs with Spotify previews\n\n";
+echo "âœ… Updated $updated / $total songs with Spotify previews\n\n";
 
 // Verify
 $result = $conn->query("SELECT COUNT(*) as count FROM songs WHERE link LIKE 'https://p.scdn.co%'");
@@ -74,6 +75,7 @@ echo "Songs with Spotify preview URLs: " . $row['count'] . "\n";
 
 $conn->close();
 
-echo "\n✨ Spotify previews are now active!\n";
+echo "\nâœ¨ Spotify previews are now active!\n";
 ?>
+
 

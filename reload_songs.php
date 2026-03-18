@@ -1,15 +1,16 @@
-<?php
+﻿<?php
+require_once 'db_config.php';
 /**
  * Reload database with new heartbreak songs
  */
 
 date_default_timezone_set('Asia/Manila');
 
-$host = 'localhost';
-$port = 3306;
-$db = 'unsaid_thoughts';
-$user = 'root';
-$password = '';
+$host = DB_HOST;
+$port = DB_PORT;
+$db = DB_NAME;
+$user = DB_USER;
+$password = DB_PASSWORD;
 
 // Load new songs database
 $songs_db = json_decode(file_get_contents('songs_db.json'), true);
@@ -20,7 +21,7 @@ $conn->set_charset("utf8mb4");
 // Delete all old songs
 $delete_query = "DELETE FROM songs";
 if ($conn->query($delete_query)) {
-    echo "✓ Cleared old songs\n";
+    echo "âœ“ Cleared old songs\n";
 }
 
 // Count by mood for reference
@@ -52,7 +53,8 @@ foreach ($mood_counts as $mood => $count) {
 
 echo str_repeat("=", 60) . "\n";
 echo "Total: " . count($songs_db) . " songs ready to be discovered\n";
-echo "\n✓ Songs library updated successfully!\n";
+echo "\nâœ“ Songs library updated successfully!\n";
 
 $conn->close();
 ?>
+

@@ -1,13 +1,14 @@
-<?php
+﻿<?php
+require_once 'db_config.php';
 /**
  * Database Migration Script - Update 2
  * Changes reaction system from "multiple per post" to "one per post"
  * Run this once after code deployment
  */
 
-$conn = new mysqli('localhost', 'root', '', 'unsaid_thoughts');
+$conn = dbConnect(true);
 if ($conn->connect_error) {
-    die('❌ Database connection failed: ' . $conn->connect_error);
+    die('âŒ Database connection failed: ' . $conn->connect_error);
 }
 $conn->set_charset("utf8mb4");
 
@@ -23,11 +24,11 @@ try {
     // 1. Backup current data
     $conn->query("CREATE TABLE IF NOT EXISTS reactions_backup_v2 LIKE reactions");
     $conn->query("INSERT INTO reactions_backup_v2 SELECT * FROM reactions");
-    echo "✅ Backed up current reactions\n\n";
+    echo "âœ… Backed up current reactions\n\n";
     
     // 2. Drop old table
     $conn->query("DROP TABLE IF EXISTS reactions");
-    echo "✅ Removed old reactions table\n";
+    echo "âœ… Removed old reactions table\n";
     
     // 3. Create new table with correct constraint
     $create_reactions_sql = "CREATE TABLE IF NOT EXISTS reactions (
@@ -42,7 +43,7 @@ try {
     )";
     
     $conn->query($create_reactions_sql);
-    echo "✅ Created new reactions table\n";
+    echo "âœ… Created new reactions table\n";
     
     // 4. Migrate data - keep latest reaction per user per post
     $backup_data = $conn->query("SELECT * FROM reactions_backup_v2 ORDER BY created_at DESC");
@@ -63,20 +64,21 @@ try {
         }
     }
     
-    echo "✅ Migrated " . $migrated_count . " reactions (keeping latest per user per post)\n\n";
+    echo "âœ… Migrated " . $migrated_count . " reactions (keeping latest per user per post)\n\n";
     
-    echo "✅ Database migration completed successfully!\n";
+    echo "âœ… Database migration completed successfully!\n";
     echo "   - Changed from: multiple reactions per user per post\n";
     echo "   - Changed to: one reaction per user per post\n";
-    echo "   - Constraint changed: (thought_id, user_id, type) → (thought_id, user_id)\n";
+    echo "   - Constraint changed: (thought_id, user_id, type) â†’ (thought_id, user_id)\n";
     echo "\nUsers can now:\n";
-    echo "   ❤️  React with one emoji/type per post\n";
-    echo "   🔄 Switch to a different emoji (replaces previous)\n";
-    echo "   ❌ Remove their reaction by clicking the same emoji again\n";
+    echo "   â¤ï¸  React with one emoji/type per post\n";
+    echo "   ðŸ”„ Switch to a different emoji (replaces previous)\n";
+    echo "   âŒ Remove their reaction by clicking the same emoji again\n";
     
 } catch (Exception $e) {
-    echo "❌ Migration error: " . $e->getMessage() . "\n";
+    echo "âŒ Migration error: " . $e->getMessage() . "\n";
 }
 
 $conn->close();
 ?>
+

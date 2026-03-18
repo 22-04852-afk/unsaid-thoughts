@@ -1,8 +1,9 @@
-<?php
-echo "🎵 EMBEDDED MUSIC PLAYER - FINAL VERIFICATION\n";
+﻿<?php
+require_once 'db_config.php';
+echo "ðŸŽµ EMBEDDED MUSIC PLAYER - FINAL VERIFICATION\n";
 echo str_repeat("=", 70) . "\n\n";
 
-$conn = new mysqli('localhost', 'root', '', 'unsaid_thoughts');
+$conn = dbConnect(true);
 
 // Get a sample post with music
 $result = $conn->query("
@@ -14,7 +15,7 @@ $result = $conn->query("
 ");
 
 if ($row = $result->fetch_assoc()) {
-    echo "✅ SAMPLE POST:\n";
+    echo "âœ… SAMPLE POST:\n";
     echo "   ID: " . $row['id'] . "\n";
     echo "   Song: " . $row['title'] . " - " . $row['artist'] . "\n";
     echo "   Audio URL: " . substr($row['link'], 0, 70) . "...\n\n";
@@ -30,40 +31,41 @@ $result = $conn->query("SELECT COUNT(*) as count FROM thoughts");
 $row = $result->fetch_assoc();
 $total_posts = $row['count'];
 
-echo "📊 STATISTICS:\n";
+echo "ðŸ“Š STATISTICS:\n";
 echo "   Posts with music: $posts_with_music / $total_posts\n";
 echo "   Coverage: 100%\n\n";
 
 // Show what happens when user clicks Play
-echo "🎬 PLAYER BEHAVIOR:\n";
-echo "   1. Click '▶ Play' button on song\n";
+echo "ðŸŽ¬ PLAYER BEHAVIOR:\n";
+echo "   1. Click 'â–¶ Play' button on song\n";
 echo "   2. Purple player appears below\n";
 echo "   3. Shows: 'Now Playing' + song title + artist\n";
 echo "   4. Browser audio player visible\n";
 echo "   5. User can: Play, Pause, Volume, Progress\n";
-echo "   6. Button changes to '⏸ Close'\n";
+echo "   6. Button changes to 'â¸ Close'\n";
 echo "   7. Click 'Close' to hide player\n\n";
 
-echo "🎯 TEST NOW:\n";
-echo "   • http://localhost/unsaidthoughts-/explore.php\n";
-echo "   • http://localhost/unsaidthoughts-/share.php\n";
-echo "   • http://localhost/unsaidthoughts-/home.php\n\n";
+echo "ðŸŽ¯ TEST NOW:\n";
+echo "   â€¢ http://localhost/unsaidthoughts-/explore.php\n";
+echo "   â€¢ http://localhost/unsaidthoughts-/share.php\n";
+echo "   â€¢ http://localhost/unsaidthoughts-/home.php\n\n";
 
-echo "✨ HOW IT LOOKS:\n";
-echo "   ┌─────────────────────────────────┐\n";
-echo "   │  🎵 Someone You Loved          │\n";
-echo "   │  Lewis Capaldi         ▶ Play  │\n";
-echo "   └─────────────────────────────────┘\n";
+echo "âœ¨ HOW IT LOOKS:\n";
+echo "   â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”\n";
+echo "   â”‚  ðŸŽµ Someone You Loved          â”‚\n";
+echo "   â”‚  Lewis Capaldi         â–¶ Play  â”‚\n";
+echo "   â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜\n";
 echo "   (Click Play... music player expands below)\n";
-echo "   ┌─────────────────────────────────┐\n";
-echo "   │ Now Playing                     │\n";
-echo "   │ Someone You Loved               │\n";
-echo "   │ Lewis Capaldi                   │\n";
-echo "   │ [◄ ॥ ► ☊ ━━━━●━━━━ 🔊]      │\n";
-echo "   │ 🎵 Preview from Spotify        │\n";
-echo "   └─────────────────────────────────┘\n\n";
+echo "   â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”\n";
+echo "   â”‚ Now Playing                     â”‚\n";
+echo "   â”‚ Someone You Loved               â”‚\n";
+echo "   â”‚ Lewis Capaldi                   â”‚\n";
+echo "   â”‚ [â—„ à¥¥ â–º â˜Š â”â”â”â”â—â”â”â”â” ðŸ”Š]      â”‚\n";
+echo "   â”‚ ðŸŽµ Preview from Spotify        â”‚\n";
+echo "   â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜\n\n";
 
-echo "✅ STATUS: MUSIC PLAYER FULLY OPERATIONAL!\n";
+echo "âœ… STATUS: MUSIC PLAYER FULLY OPERATIONAL!\n";
 
 $conn->close();
 ?>
+

@@ -1,5 +1,6 @@
-<?php
-$conn = new mysqli('localhost', 'root', '', 'unsaid_thoughts');
+﻿<?php
+require_once 'db_config.php';
+$conn = dbConnect(true);
 $result = $conn->query('SELECT COUNT(*) as count FROM thoughts');
 $row = $result->fetch_assoc();
 echo 'Total thoughts: ' . $row['count'] . "\n";
@@ -21,3 +22,4 @@ while ($row = $result->fetch_assoc()) {
 
 $conn->close();
 ?>
+

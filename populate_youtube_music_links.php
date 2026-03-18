@@ -1,15 +1,16 @@
-<?php
+﻿<?php
+require_once 'db_config.php';
 /**
  * Populate missing song links from songs_db.json
  */
 
 date_default_timezone_set('Asia/Manila');
 
-$host = 'localhost';
-$port = 3306;
-$db = 'unsaid_thoughts';
-$user = 'root';
-$password = '';
+$host = DB_HOST;
+$port = DB_PORT;
+$db = DB_NAME;
+$user = DB_USER;
+$password = DB_PASSWORD;
 
 // Load songs database
 $songs_db = json_decode(file_get_contents('songs_db.json'), true);
@@ -49,11 +50,11 @@ while ($row = $result->fetch_assoc()) {
         $update_stmt->bind_param("si", $new_url, $row['id']);
         
         if ($update_stmt->execute()) {
-            echo "✓ Updated: " . $row['title'] . " - " . $row['artist'] . "\n";
+            echo "âœ“ Updated: " . $row['title'] . " - " . $row['artist'] . "\n";
             $updated++;
         }
     } else {
-        echo "✗ Not found in DB: " . $row['title'] . " - " . $row['artist'] . "\n";
+        echo "âœ— Not found in DB: " . $row['title'] . " - " . $row['artist'] . "\n";
         $not_found++;
     }
 }
@@ -65,3 +66,4 @@ echo "- Not found in songs_db.json: " . $not_found . " songs\n";
 
 $conn->close();
 ?>
+

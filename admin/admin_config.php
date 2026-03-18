@@ -1,8 +1,9 @@
 <?php
 /**
- * Admin credentials configuration.
- * Change these values immediately after first login.
+ * Admin bootstrap configuration.
+ *
+ * Set ADMIN_BOOTSTRAP_KEY to a long random value only while creating
+ * your very first admin account, then clear it afterwards.
  */
 
-define('ADMIN_USERNAME', 'owner');
-define('ADMIN_PASSWORD_HASH', '$2y$10$MYILqkJPJ4KkgFWKyMnFMuyg2uOnqHDLPwyjGs2AB5P708f6srD1.');
+define('ADMIN_BOOTSTRAP_KEY', '');

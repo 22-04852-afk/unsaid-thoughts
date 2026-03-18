@@ -8,6 +8,30 @@ if (isAdminLoggedIn()) {
 
 $error = '';
 $hasAdminAccount = false;
+$clientIp = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+$maxAttempts = 5;
+$windowSeconds = 15 * 60;
+
+if (!isset($_SESSION['admin_login_rate']) || !is_array($_SESSION['admin_login_rate'])) {
+    $_SESSION['admin_login_rate'] = [];
+}
+
+$rateBucket = $_SESSION['admin_login_rate'];
+foreach ($rateBucket as $ip => $entries) {
+    $cleaned = array_values(array_filter($entries, function ($ts) use ($windowSeconds) {
+        return (time() - (int)$ts) <= $windowSeconds;
+    }));
+
+    if ($cleaned) {
+        $rateBucket[$ip] = $cleaned;
+    } else {
+        unset($rateBucket[$ip]);
+    }
+}
+
+$_SESSION['admin_login_rate'] = $rateBucket;
+$attempts = $_SESSION['admin_login_rate'][$clientIp] ?? [];
+$isRateLimited = count($attempts) >= $maxAttempts;
 
 try {
     $conn = getAdminDbConnection();
@@ -18,12 +42,16 @@ try {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if ($isRateLimited) {
+        $error = 'Too many login attempts. Please wait 15 minutes and try again.';
+    }
+
     $username = trim($_POST['username'] ?? '');
     $password = (string)($_POST['password'] ?? '');
 
-    if ($username === '' || $password === '') {
+    if ($error === '' && ($username === '' || $password === '')) {
         $error = 'Enter your username/email and password.';
-    } else {
+    } elseif ($error === '') {
         try {
             if (!isset($conn) || !($conn instanceof mysqli)) {
                 $conn = getAdminDbConnection();
@@ -34,21 +62,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $matchedUser = findAdminUserByLogin($conn, $username);
             $validDbUser = $matchedUser && password_verify($password, $matchedUser['password_hash']);
 
-            // Keep emergency static credentials as fallback.
-            $validUser = hash_equals(ADMIN_USERNAME, $username);
-            $validPass = password_verify($password, ADMIN_PASSWORD_HASH);
-
-            if ($validDbUser || ($validUser && $validPass)) {
+            if ($validDbUser) {
                 session_regenerate_id(true);
                 $_SESSION['is_admin'] = true;
-                $_SESSION['admin_user'] = $matchedUser['username'] ?? ADMIN_USERNAME;
+                $_SESSION['admin_user'] = $matchedUser['username'];
                 $_SESSION['admin_csrf_token'] = bin2hex(random_bytes(32));
+                unset($_SESSION['admin_login_rate'][$clientIp]);
 
                 header('Location: dashboard-admin.php');
                 exit;
             }
 
             $error = 'Invalid admin credentials.';
+            $_SESSION['admin_login_rate'][$clientIp][] = time();
         } catch (Exception $e) {
             $error = $e->getMessage();
         }
@@ -199,7 +225,11 @@ if (isset($conn) && $conn instanceof mysqli) {
 
         <p class="helper">
             <?php if (!$hasAdminAccount): ?>
-                No admin account yet? <a href="admin_register.php">Create one now</a>
+                <?php if (adminBootstrapKeyConfigured()): ?>
+                    No admin account yet? Open <strong>admin_register.php?setup_key=YOUR_KEY</strong> to create the first one.
+                <?php else: ?>
+                    No admin account yet? Set <strong>ADMIN_BOOTSTRAP_KEY</strong> in admin_config.php first.
+                <?php endif; ?>
             <?php else: ?>
                 Need another admin account? Sign in first, then use register.
             <?php endif; ?>

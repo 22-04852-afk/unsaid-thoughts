@@ -9,24 +9,14 @@ date_default_timezone_set('Asia/Manila');
 
 // Include session config for user tracking
 require_once 'config_session.php';
-
-// Database connection
-$host = 'localhost';
-$port = 3306;
-$db = 'unsaid_thoughts';
-$user = 'root';
-$password = '';
+require_once 'db_config.php';
 
 $error = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         // Connect to database
-        $conn = new mysqli($host, $user, $password, $db, $port);
-        
-        if ($conn->connect_error) {
-            throw new Exception('Database connection failed: ' . $conn->connect_error);
-        }
+        $conn = dbConnect(true);
         
         $conn->set_charset("utf8mb4");
         

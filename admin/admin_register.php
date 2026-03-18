@@ -17,7 +17,9 @@ try {
     $hasAdminAccount = true;
 }
 
-$canRegister = !$hasAdminAccount || isAdminLoggedIn();
+$setupKey = trim((string)($_GET['setup_key'] ?? $_POST['setup_key'] ?? ''));
+$bootstrapAllowed = !$hasAdminAccount && isValidAdminBootstrapKey($setupKey);
+$canRegister = isAdminLoggedIn() || $bootstrapAllowed;
 $csrfToken = adminCsrfToken();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $canRegister) {
@@ -276,6 +278,7 @@ if (isset($conn) && $conn instanceof mysqli) {
         <?php if ($canRegister): ?>
             <form method="POST" autocomplete="off">
                 <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
+                <input type="hidden" name="setup_key" value="<?php echo htmlspecialchars($setupKey, ENT_QUOTES, 'UTF-8'); ?>">
                 <div class="field">
                     <label for="username">Username</label>
                     <input id="username" name="username" type="text" minlength="3" maxlength="30" pattern="[a-zA-Z0-9._-]{3,30}" value="<?php echo htmlspecialchars($formValues['username'], ENT_QUOTES, 'UTF-8'); ?>" required>
@@ -308,7 +311,14 @@ if (isset($conn) && $conn instanceof mysqli) {
                 <button class="btn" type="submit">Create Account</button>
             </form>
         <?php else: ?>
-            <div class="error">Registration is locked. Sign in as admin first before creating another account.</div>
+            <?php if (!$hasAdminAccount): ?>
+                <div class="error">
+                    First admin registration is locked. Provide a valid <strong>setup_key</strong> in the URL and set the same
+                    <strong>ADMIN_BOOTSTRAP_KEY</strong> in admin_config.php.
+                </div>
+            <?php else: ?>
+                <div class="error">Registration is locked. Sign in as admin first before creating another account.</div>
+            <?php endif; ?>
         <?php endif; ?>
 
         <p class="links">

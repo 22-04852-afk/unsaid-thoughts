@@ -1,5 +1,6 @@
-<?php
-echo "🔍 Testing Audio URLs...\n\n";
+﻿<?php
+require_once 'db_config.php';
+echo "ðŸ” Testing Audio URLs...\n\n";
 
 $urls = [
     'https://www.sample-videos.com/audio/mp3/crowd-cheering.mp3',
@@ -15,12 +16,12 @@ foreach ($urls as $url) {
     
     if ($headers && isset($headers[0])) {
         if (strpos($headers[0], '200') !== false) {
-            echo "  ✅ Working (200 OK)\n";
+            echo "  âœ… Working (200 OK)\n";
         } else {
-            echo "  ❌ Failed: " . $headers[0] . "\n";
+            echo "  âŒ Failed: " . $headers[0] . "\n";
         }
     } else {
-        echo "  ❌ No response\n";
+        echo "  âŒ No response\n";
     }
     echo "\n";
 }
@@ -29,12 +30,13 @@ foreach ($urls as $url) {
 echo "\n" . str_repeat("=", 60) . "\n";
 echo "Current URLs in database:\n\n";
 
-$conn = new mysqli('localhost', 'root', '', 'unsaid_thoughts');
+$conn = dbConnect(true);
 $result = $conn->query("SELECT DISTINCT link FROM songs LIMIT 3");
 
 while ($row = $result->fetch_assoc()) {
-    echo "• " . substr($row['link'], 0, 70) . "...\n";
+    echo "â€¢ " . substr($row['link'], 0, 70) . "...\n";
 }
 
 $conn->close();
 ?>
+

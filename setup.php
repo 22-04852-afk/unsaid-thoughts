@@ -4,11 +4,21 @@
  * Visit this file to create the database and tables
  */
 
+$remoteAddr = $_SERVER['REMOTE_ADDR'] ?? '';
+$isLocalRequest = in_array($remoteAddr, ['127.0.0.1', '::1'], true);
+
+if (PHP_SAPI !== 'cli' && !$isLocalRequest) {
+    http_response_code(403);
+    exit('Setup is disabled for non-local requests.');
+}
+
+require_once __DIR__ . '/db_config.php';
+
 // Database credentials
-$host = 'localhost';
-$user = 'root';
-$password = '';
-$db_name = 'unsaid_thoughts';
+$host = DB_HOST;
+$user = DB_USER;
+$password = DB_PASSWORD;
+$db_name = DB_NAME;
 
 // First, connect without selecting a database to create it
 $conn = new mysqli($host, $user, $password);

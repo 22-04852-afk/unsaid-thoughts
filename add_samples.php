@@ -1,6 +1,7 @@
-<?php
+﻿<?php
+require_once 'db_config.php';
 // Database connection
-$conn = new mysqli('localhost', 'root', '', 'unsaid_thoughts');
+$conn = dbConnect(true);
 if ($conn->connect_error) {
     die('Connection failed: ' . $conn->connect_error);
 }
@@ -95,12 +96,13 @@ foreach ($sample_thoughts as $thought) {
             $conn->query($sql_reaction);
         }
         
-        echo "✅ Added thought ID: $thought_id\n";
+        echo "âœ… Added thought ID: $thought_id\n";
     } else {
-        echo "❌ Error: " . $conn->error . "\n";
+        echo "âŒ Error: " . $conn->error . "\n";
     }
 }
 
-echo "\n✨ Sample data added successfully!\n";
+echo "\nâœ¨ Sample data added successfully!\n";
 $conn->close();
 ?>
+

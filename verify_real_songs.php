@@ -1,15 +1,16 @@
-<?php
+﻿<?php
+require_once 'db_config.php';
 /**
  * Verify all songs in database are existing songs
  */
 
 date_default_timezone_set('Asia/Manila');
 
-$host = 'localhost';
-$port = 3306;
-$db = 'unsaid_thoughts';
-$user = 'root';
-$password = '';
+$host = DB_HOST;
+$port = DB_PORT;
+$db = DB_NAME;
+$user = DB_USER;
+$password = DB_PASSWORD;
 
 // Load songs database for verification
 $songs_db = json_decode(file_get_contents('songs_db.json'), true);
@@ -45,10 +46,10 @@ while ($row = $result->fetch_assoc()) {
     
     if (isset($songs_lookup[$key])) {
         $existing++;
-        $status = "✓ EXISTS";
+        $status = "âœ“ EXISTS";
     } else {
         $not_found++;
-        $status = "✗ NOT FOUND";
+        $status = "âœ— NOT FOUND";
     }
     
     $songs_to_show[] = [
@@ -71,8 +72,9 @@ echo "- Not in database: " . $not_found . "\n";
 echo "- Total songs in database: " . ($existing + $not_found) . "\n";
 
 if ($not_found > 0) {
-    echo "\n⚠️ Songs not in songs_db.json need to be added or removed!\n";
+    echo "\nâš ï¸ Songs not in songs_db.json need to be added or removed!\n";
 }
 
 $conn->close();
 ?>
+

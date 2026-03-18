@@ -1,10 +1,11 @@
-<?php
-echo "🎵 EMBEDDED MUSIC PLAYER - VERIFICATION\n";
+﻿<?php
+require_once 'db_config.php';
+echo "ðŸŽµ EMBEDDED MUSIC PLAYER - VERIFICATION\n";
 echo str_repeat("=", 70) . "\n\n";
 
-$conn = new mysqli('localhost', 'root', '', 'unsaid_thoughts');
+$conn = dbConnect(true);
 if ($conn->connect_error) {
-    die("❌ Database connection failed\n");
+    die("âŒ Database connection failed\n");
 }
 
 // Get a sample thought with song
@@ -19,7 +20,7 @@ $result = $conn->query("
 if ($result->num_rows > 0) {
     $row = $result->fetch_assoc();
     
-    echo "✅ SAMPLE POST WITH SONG:\n";
+    echo "âœ… SAMPLE POST WITH SONG:\n";
     echo "   Post ID: " . $row['id'] . "\n";
     echo "   Song: " . $row['title'] . " - " . $row['artist'] . "\n\n";
     
@@ -27,7 +28,7 @@ if ($result->num_rows > 0) {
     $search_query = $row['title'] . ' ' . $row['artist'];
     $embed_url = "https://www.youtube.com/embed/?listType=search&list=" . urlencode($search_query);
     
-    echo "✅ EMBEDDED YOUTUBE PLAYER:\n";
+    echo "âœ… EMBEDDED YOUTUBE PLAYER:\n";
     echo "   Search Query: " . htmlspecialchars($search_query) . "\n";
     echo "   Embed URL: " . substr($embed_url, 0, 80) . "...\n\n";
     
@@ -40,11 +41,11 @@ if ($result->num_rows > 0) {
     echo "       allowfullscreen>\n";
     echo "   </iframe>\n\n";
 } else {
-    echo "ℹ️  No posts with songs found yet\n\n";
+    echo "â„¹ï¸  No posts with songs found yet\n\n";
 }
 
 // Check posts across all pages
-echo "📊 STATISTICS:\n";
+echo "ðŸ“Š STATISTICS:\n";
 
 $result = $conn->query("SELECT COUNT(*) as total FROM thoughts WHERE id IN (SELECT thought_id FROM songs)");
 $row = $result->fetch_assoc();
@@ -55,28 +56,29 @@ $row = $result->fetch_assoc();
 echo "   Total posts: " . $row['total'] . "\n\n";
 
 echo str_repeat("=", 70) . "\n";
-echo "✨ HOW IT WORKS:\n\n";
+echo "âœ¨ HOW IT WORKS:\n\n";
 echo "   1. User views a post with a song\n";
 echo "   2. Song title + artist displayed with RED 'Play' button\n";
-echo "   3. Click 'Play' → YouTube embed expands\n";
+echo "   3. Click 'Play' â†’ YouTube embed expands\n";
 echo "   4. Search results show for that song on YouTube\n";
 echo "   5. User can play any result or close player\n";
 echo "   6. Button changes to 'Close' when player is open\n\n";
 
-echo "🎯 TEST THESE PAGES:\n";
-echo "   • http://localhost/unsaidthoughts-/explore.php\n";
-echo "   • http://localhost/unsaidthoughts-/share.php\n";
-echo "   • http://localhost/unsaidthoughts-/home.php\n\n";
+echo "ðŸŽ¯ TEST THESE PAGES:\n";
+echo "   â€¢ http://localhost/unsaidthoughts-/explore.php\n";
+echo "   â€¢ http://localhost/unsaidthoughts-/share.php\n";
+echo "   â€¢ http://localhost/unsaidthoughts-/home.php\n\n";
 
-echo "✅ FEATURES:\n";
-echo "   ✓ Music player embeds directly in the page\n";
-echo "   ✓ No external link needed\n";
-echo "   ✓ Full YouTube search integration\n";
-echo "   ✓ Play/close toggle button\n";
-echo "   ✓ Smooth scroll to player when opened\n";
-echo "   ✓ Mobile responsive design\n\n";
+echo "âœ… FEATURES:\n";
+echo "   âœ“ Music player embeds directly in the page\n";
+echo "   âœ“ No external link needed\n";
+echo "   âœ“ Full YouTube search integration\n";
+echo "   âœ“ Play/close toggle button\n";
+echo "   âœ“ Smooth scroll to player when opened\n";
+echo "   âœ“ Mobile responsive design\n\n";
 
-echo "✨ STATUS: EMBEDDED MUSIC PLAYBACK READY!\n";
+echo "âœ¨ STATUS: EMBEDDED MUSIC PLAYBACK READY!\n";
 
 $conn->close();
 ?>
+

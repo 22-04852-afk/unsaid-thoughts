@@ -1,15 +1,16 @@
-<?php
+﻿<?php
+require_once 'db_config.php';
 /**
  * Populate sample audio URLs for songs
  * Uses demo URLs that work with HTML5 audio
  */
 
-$conn = new mysqli('localhost', 'root', '', 'unsaid_thoughts');
+$conn = dbConnect(true);
 if ($conn->connect_error) {
-    die('❌ Connection failed: ' . $conn->connect_error);
+    die('âŒ Connection failed: ' . $conn->connect_error);
 }
 
-echo "🎵 Populating demo audio URLs for songs...\n";
+echo "ðŸŽµ Populating demo audio URLs for songs...\n";
 
 // Sample audio URLs that work with HTML5 audio tags
 // These are free/public domain audio samples
@@ -30,7 +31,7 @@ $sample_urls = [
 $songs_db = json_decode(file_get_contents('songs_db.json'), true);
 
 if (!$songs_db) {
-    die('❌ Failed to load songs_db.json');
+    die('âŒ Failed to load songs_db.json');
 }
 
 // Update database with cycling sample URLs
@@ -44,7 +45,7 @@ foreach ($songs_db as $song) {
     
     $stmt = $conn->prepare("UPDATE songs SET link = ? WHERE title = ? AND artist = ?");
     if (!$stmt) {
-        echo "❌ Prepare failed: " . $conn->error . "\n";
+        echo "âŒ Prepare failed: " . $conn->error . "\n";
         continue;
     }
     
@@ -58,9 +59,9 @@ foreach ($songs_db as $song) {
     $url_index++;
 }
 
-echo "✅ Updated " . $update_count . " song records with demo audio URLs\n";
-echo "📊 Using " . count($sample_urls) . " rotating sample audio files\n";
-echo "\n✨ Songs should now play! Test on the explore page.\n";
+echo "âœ… Updated " . $update_count . " song records with demo audio URLs\n";
+echo "ðŸ“Š Using " . count($sample_urls) . " rotating sample audio files\n";
+echo "\nâœ¨ Songs should now play! Test on the explore page.\n";
 
 // Also update the songs_db.json for future song searches
 $updated_db = [];
@@ -73,7 +74,8 @@ foreach ($songs_db as $song) {
 }
 
 file_put_contents('songs_db.json', json_encode($updated_db, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
-echo "📝 Updated songs_db.json with audio URLs\n";
+echo "ðŸ“ Updated songs_db.json with audio URLs\n";
 
 $conn->close();
 ?>
+

@@ -4,6 +4,8 @@
  * Prevents browser blocking of external audio sources
  */
 
+require_once 'db_config.php';
+
 // Get the thought ID parameter
 $thought_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
@@ -13,8 +15,9 @@ if ($thought_id === 0) {
 }
 
 // Fetch audio URL from database using thought_id
-$conn = new mysqli('localhost', 'root', '', 'unsaid_thoughts');
-if ($conn->connect_error) {
+try {
+    $conn = dbConnect(true);
+} catch (Exception $e) {
     header('HTTP/1.0 500 Internal Server Error');
     die('Connection failed');
 }

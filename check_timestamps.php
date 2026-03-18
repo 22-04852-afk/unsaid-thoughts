@@ -1,13 +1,14 @@
-<?php
+﻿<?php
+require_once 'db_config.php';
 // Set timezone for consistent timestamp handling
 date_default_timezone_set('Asia/Manila');
 
 // Check database timestamps
-$host = 'localhost';
-$port = 3306;
-$db = 'unsaid_thoughts';
-$user = 'root';
-$password = '';
+$host = DB_HOST;
+$port = DB_PORT;
+$db = DB_NAME;
+$user = DB_USER;
+$password = DB_PASSWORD;
 
 $conn = new mysqli($host, $user, $password, $db, $port);
 $conn->set_charset("utf8mb4");
@@ -46,3 +47,4 @@ while ($row = $result->fetch_assoc()) {
 
 $conn->close();
 ?>
+

@@ -1,8 +1,9 @@
-<?php
-echo "🎵 SPOTIFY MUSIC INTEGRATION - VERIFICATION\n";
+﻿<?php
+require_once 'db_config.php';
+echo "ðŸŽµ SPOTIFY MUSIC INTEGRATION - VERIFICATION\n";
 echo str_repeat("=", 70) . "\n\n";
 
-$conn = new mysqli('localhost', 'root', '', 'unsaid_thoughts');
+$conn = dbConnect(true);
 
 // Get sample songs
 $result = $conn->query("
@@ -13,7 +14,7 @@ $result = $conn->query("
     LIMIT 3
 ");
 
-echo "✅ SAMPLE SONGS WITH SPOTIFY INTEGRATION:\n\n";
+echo "âœ… SAMPLE SONGS WITH SPOTIFY INTEGRATION:\n\n";
 
 while ($row = $result->fetch_assoc()) {
     $title = $row['title'];
@@ -27,38 +28,39 @@ while ($row = $result->fetch_assoc()) {
 }
 
 echo str_repeat("=", 70) . "\n";
-echo "✨ HOW IT WORKS NOW:\n\n";
+echo "âœ¨ HOW IT WORKS NOW:\n\n";
 
-echo "1️⃣  USER CLICKS 'PLAY' BUTTON\n";
-echo "   ▼\n";
-echo "2️⃣  GREEN SPOTIFY PLAYER APPEARS\n";
-echo "   ▼\n";
-echo "3️⃣  SHOWS: 'Now Playing on Spotify'\n";
-echo "   ▼\n";
-echo "4️⃣  USER CLICKS 'Open in Spotify' BUTTON\n";
-echo "   ▼\n";
-echo "5️⃣  OPENS SPOTIFY WITH SEARCH RESULTS\n";
-echo "   ▼\n";
-echo "6️⃣  CLICKS ANY RESULT TO PLAY FULL SONG 🎶\n\n";
+echo "1ï¸âƒ£  USER CLICKS 'PLAY' BUTTON\n";
+echo "   â–¼\n";
+echo "2ï¸âƒ£  GREEN SPOTIFY PLAYER APPEARS\n";
+echo "   â–¼\n";
+echo "3ï¸âƒ£  SHOWS: 'Now Playing on Spotify'\n";
+echo "   â–¼\n";
+echo "4ï¸âƒ£  USER CLICKS 'Open in Spotify' BUTTON\n";
+echo "   â–¼\n";
+echo "5ï¸âƒ£  OPENS SPOTIFY WITH SEARCH RESULTS\n";
+echo "   â–¼\n";
+echo "6ï¸âƒ£  CLICKS ANY RESULT TO PLAY FULL SONG ðŸŽ¶\n\n";
 
 echo str_repeat("=", 70) . "\n";
-echo "🎯 TEST NOW:\n";
+echo "ðŸŽ¯ TEST NOW:\n";
 echo "   1. Refresh browser (Ctrl+F5)\n";
 echo "   2. Go to http://localhost/unsaidthoughts-/explore.php\n";
-echo "   3. Click '▶ Play' on any song\n";
+echo "   3. Click 'â–¶ Play' on any song\n";
 echo "   4. Green Spotify player appears\n";
 echo "   5. Click 'Open in Spotify' button\n";
 echo "   6. Spotify opens with search results\n";
-echo "   7. Click any song to play! 🎉\n\n";
+echo "   7. Click any song to play! ðŸŽ‰\n\n";
 
-echo "✨ FEATURES:\n";
-echo "   ✓ Official Spotify integration\n";
-echo "   ✓ Play full songs (not previews)\n";
-echo "   ✓ Access Spotify search & recommendations\n";
-echo "   ✓ Beautiful green Spotify branding\n";
-echo "   ✓ Works with/without Spotify account\n\n";
+echo "âœ¨ FEATURES:\n";
+echo "   âœ“ Official Spotify integration\n";
+echo "   âœ“ Play full songs (not previews)\n";
+echo "   âœ“ Access Spotify search & recommendations\n";
+echo "   âœ“ Beautiful green Spotify branding\n";
+echo "   âœ“ Works with/without Spotify account\n\n";
 
-echo "✅ STATUS: SPOTIFY MUSIC INTEGRATION ACTIVE!\n";
+echo "âœ… STATUS: SPOTIFY MUSIC INTEGRATION ACTIVE!\n";
 
 $conn->close();
 ?>
+

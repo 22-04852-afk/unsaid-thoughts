@@ -1,0 +1,16 @@
+# Security hardening for production
+# Blocks direct web access to setup, check, test, verify, and migration utility scripts.
+
+<IfModule mod_authz_core.c>
+    <FilesMatch "^(setup|check_.*|test_.*|verify_.*|migrate_.*|populate_.*|reload_.*|fetch_spotify_.*|fix_audio_urls|add_samples)\.php$">
+        Require local
+    </FilesMatch>
+</IfModule>
+
+<IfModule !mod_authz_core.c>
+    <FilesMatch "^(setup|check_.*|test_.*|verify_.*|migrate_.*|populate_.*|reload_.*|fetch_spotify_.*|fix_audio_urls|add_samples)\.php$">
+        Order deny,allow
+        Deny from all
+        Allow from 127.0.0.1 ::1
+    </FilesMatch>
+</IfModule>

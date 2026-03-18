@@ -4,25 +4,14 @@ date_default_timezone_set('Asia/Manila');
 
 // Include session config for user tracking
 require_once 'config_session.php';
-
-// Database connection
-$host = 'localhost';
-$port = 3306;
-$db = 'unsaid_thoughts';
-$user = 'root';
-$password = '';
+require_once 'db_config.php';
 
 $error = null;
 $thoughts = [];
 $success = isset($_GET['success']) ? true : false;
 
 try {
-    $conn = @new mysqli($host, $user, $password, $db, $port);
-    
-    if ($conn->connect_error) {
-        throw new Exception('MySQL Connection Error: ' . $conn->connect_error . 
-                          '<br><br>➡️ <strong>Fix:</strong> Start MySQL in XAMPP Control Panel');
-    }
+    $conn = dbConnect(true);
     
     $conn->set_charset("utf8mb4");
     

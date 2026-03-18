@@ -1,7 +1,17 @@
 <?php
 require_once __DIR__ . '/admin_config.php';
+require_once __DIR__ . '/../db_config.php';
 
 if (session_status() === PHP_SESSION_NONE) {
+    $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+        || ((int)($_SERVER['SERVER_PORT'] ?? 0) === 443);
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path' => '/',
+        'secure' => $isHttps,
+        'httponly' => true,
+        'samesite' => 'Lax'
+    ]);
     session_start();
 }
 
@@ -16,6 +26,23 @@ function requireAdminAuth()
         header('Location: admin_login.php');
         exit;
     }
+}
+
+function adminBootstrapKeyConfigured()
+{
+    return defined('ADMIN_BOOTSTRAP_KEY') && trim((string)ADMIN_BOOTSTRAP_KEY) !== '';
+}
+
+function isValidAdminBootstrapKey($providedKey)
+{
+    if (!adminBootstrapKeyConfigured()) {
+        return false;
+    }
+
+    $configured = trim((string)ADMIN_BOOTSTRAP_KEY);
+    $provided = trim((string)$providedKey);
+
+    return $provided !== '' && hash_equals($configured, $provided);
 }
 
 function adminCsrfToken()
@@ -38,13 +65,7 @@ function verifyAdminCsrf($token)
 
 function getAdminDbConnection()
 {
-    $conn = new mysqli('localhost', 'root', '', 'unsaid_thoughts');
-    if ($conn->connect_error) {
-        throw new Exception('Database connection failed: ' . $conn->connect_error);
-    }
-
-    $conn->set_charset('utf8mb4');
-    return $conn;
+    return dbConnect(true);
 }
 
 function ensureAdminUsersTable($conn)

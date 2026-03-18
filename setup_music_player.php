@@ -1,15 +1,16 @@
-<?php
+﻿<?php
+require_once 'db_config.php';
 /**
  * Create working music player with demo audio
  * Using free music library URLs that work without auth
  */
 
-echo "🎵 Setting up embedded music player...\n";
+echo "ðŸŽµ Setting up embedded music player...\n";
 echo str_repeat("=", 70) . "\n\n";
 
-$conn = new mysqli('localhost', 'root', '', 'unsaid_thoughts');
+$conn = dbConnect(true);
 if ($conn->connect_error) {
-    die("❌ Connection failed: " . $conn->connect_error . "\n");
+    die("âŒ Connection failed: " . $conn->connect_error . "\n");
 }
 
 // Download a sample MP3 and create local copies for testing
@@ -37,7 +38,7 @@ foreach ($songs as $song) {
     $stmt->bind_param("si", $demo_url, $song['id']);
     
     if ($stmt->execute()) {
-        echo "✅ " . $song['title'] . " - " . $song['artist'] . "\n";
+        echo "âœ… " . $song['title'] . " - " . $song['artist'] . "\n";
         $updated++;
     }
     
@@ -46,12 +47,12 @@ foreach ($songs as $song) {
 }
 
 echo "\n" . str_repeat("=", 70) . "\n";
-echo "✅ Updated $updated songs with working audio URLs\n\n";
+echo "âœ… Updated $updated songs with working audio URLs\n\n";
 
 // Verify
 $result = $conn->query("SELECT COUNT(*) as count FROM songs WHERE link IS NOT NULL AND link != ''");
 $row = $result->fetch_assoc();
-echo "✨ Songs with audio: " . $row['count'] . "\n\n";
+echo "âœ¨ Songs with audio: " . $row['count'] . "\n\n";
 
 // Show sample
 $result = $conn->query("SELECT title, artist, link FROM songs LIMIT 1");
@@ -61,8 +62,9 @@ if ($row = $result->fetch_assoc()) {
     echo "  URL: " . substr($row['link'], 0, 60) . "...\n\n";
 }
 
-echo "✅ READY: Music player is now active on all pages!\n";
+echo "âœ… READY: Music player is now active on all pages!\n";
 echo "   Click 'Play' on any song to hear the music.\n";
 
 $conn->close();
 ?>
+

@@ -1,15 +1,16 @@
-<?php
+﻿<?php
+require_once 'db_config.php';
 /**
  * Fetch Spotify preview URLs for all songs
  * Uses Spotify Web API to get playable 30-second previews
  */
 
-echo "🎵 Fetching Spotify preview URLs...\n";
+echo "ðŸŽµ Fetching Spotify preview URLs...\n";
 echo str_repeat("=", 70) . "\n\n";
 
-$conn = new mysqli('localhost', 'root', '', 'unsaid_thoughts');
+$conn = dbConnect(true);
 if ($conn->connect_error) {
-    die("❌ Connection failed\n");
+    die("âŒ Connection failed\n");
 }
 
 // Get all unique songs
@@ -51,7 +52,7 @@ foreach ($songs as $song) {
         if (!$response) {
             // Fallback: Create Spotify search URL
             $spotify_search_url = "https://open.spotify.com/search/" . urlencode("$title $artist");
-            echo "⏭️  $title - $artist (Using search link)\n";
+            echo "â­ï¸  $title - $artist (Using search link)\n";
             $failed++;
             continue;
         }
@@ -59,7 +60,7 @@ foreach ($songs as $song) {
         $data = json_decode($response, true);
         
         if (!isset($data['tracks']['items'][0]['preview_url'])) {
-            echo "⏭️  $title - $artist (No preview available)\n";
+            echo "â­ï¸  $title - $artist (No preview available)\n";
             $failed++;
             continue;
         }
@@ -67,7 +68,7 @@ foreach ($songs as $song) {
         $preview_url = $data['tracks']['items'][0]['preview_url'];
         
         if (empty($preview_url)) {
-            echo "⏭️  $title - $artist (Empty preview)\n";
+            echo "â­ï¸  $title - $artist (Empty preview)\n";
             $failed++;
             continue;
         }
@@ -79,7 +80,7 @@ foreach ($songs as $song) {
             $stmt->execute();
             
             if ($stmt->affected_rows > 0) {
-                echo "✅ $title - $artist\n";
+                echo "âœ… $title - $artist\n";
                 $updated++;
             }
             $stmt->close();
@@ -88,7 +89,7 @@ foreach ($songs as $song) {
         sleep(0.1); // Rate limiting
         
     } catch (Exception $e) {
-        echo "❌ Error: $title - $artist\n";
+        echo "âŒ Error: $title - $artist\n";
         $failed++;
     }
 }
@@ -98,3 +99,4 @@ echo "Results: Updated $updated, Failed $failed\n";
 
 $conn->close();
 ?>
+

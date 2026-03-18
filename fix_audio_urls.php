@@ -1,9 +1,10 @@
-<?php
-echo "🎵 Fixing audio URLs with working audio files...\n\n";
+﻿<?php
+require_once 'db_config.php';
+echo "ðŸŽµ Fixing audio URLs with working audio files...\n\n";
 
-$conn = new mysqli('localhost', 'root', '', 'unsaid_thoughts');
+$conn = dbConnect(true);
 if ($conn->connect_error) {
-    die("❌ Connection failed\n");
+    die("âŒ Connection failed\n");
 }
 
 // Working SoundHelix MP3 URLs
@@ -34,17 +35,17 @@ foreach ($songs as $song) {
     
     $stmt = $conn->prepare("UPDATE songs SET link = ? WHERE id = ?");
     if (!$stmt) {
-        echo "❌ Error: " . $conn->error . "\n";
+        echo "âŒ Error: " . $conn->error . "\n";
         continue;
     }
     
     $stmt->bind_param("si", $url, $song['id']);
     
     if ($stmt->execute()) {
-        echo "✅ " . $song['title'] . "\n";
+        echo "âœ… " . $song['title'] . "\n";
         $updated++;
     } else {
-        echo "❌ Failed to update: " . $song['title'] . "\n";
+        echo "âŒ Failed to update: " . $song['title'] . "\n";
     }
     
     $stmt->close();
@@ -52,8 +53,8 @@ foreach ($songs as $song) {
 }
 
 echo "\n" . str_repeat("=", 60) . "\n";
-echo "✅ Updated $updated songs with WORKING audio URLs\n";
-echo "🎵 All audio is from SoundHelix (tested & working)\n\n";
+echo "âœ… Updated $updated songs with WORKING audio URLs\n";
+echo "ðŸŽµ All audio is from SoundHelix (tested & working)\n\n";
 
 // Verify
 $result = $conn->query("SELECT COUNT(DISTINCT link) as unique_urls FROM songs WHERE link LIKE 'https://www.soundhelix%'");
@@ -62,6 +63,7 @@ echo "Working URLs active: " . $row['unique_urls'] . " different audio files\n";
 
 $conn->close();
 
-echo "\n✅ FIXED! Music should now play.\n";
+echo "\nâœ… FIXED! Music should now play.\n";
 echo "Refresh your browser and try clicking Play again!\n";
 ?>
+

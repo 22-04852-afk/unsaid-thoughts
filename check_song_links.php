@@ -1,5 +1,6 @@
-<?php
-$conn = new mysqli('localhost', 'root', '', 'unsaid_thoughts');
+﻿<?php
+require_once 'db_config.php';
+$conn = dbConnect(true);
 $result = $conn->query('SELECT id, title, artist, link FROM songs LIMIT 5');
 if ($result) {
     echo "Songs in database:\n\n";
@@ -13,3 +14,4 @@ if ($result) {
 }
 $conn->close();
 ?>
+

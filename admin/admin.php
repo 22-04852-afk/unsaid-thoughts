@@ -2,11 +2,7 @@
 require_once __DIR__ . '/admin_auth.php';
 requireAdminAuth();
 
-$conn = new mysqli('localhost', 'root', '', 'unsaid_thoughts');
-if ($conn->connect_error) {
-    die('Database connection failed: ' . $conn->connect_error);
-}
-$conn->set_charset('utf8mb4');
+$conn = getAdminDbConnection();
 
 $flash = '';
 $flashType = 'ok';

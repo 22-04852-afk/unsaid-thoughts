@@ -1,13 +1,14 @@
-<?php
+﻿<?php
+require_once 'db_config.php';
 /**
  * Database Migration Script
  * Updates the database schema to support per-user reactions
  * Run this once after deploying the new code
  */
 
-$conn = new mysqli('localhost', 'root', '', 'unsaid_thoughts');
+$conn = dbConnect(true);
 if ($conn->connect_error) {
-    die('❌ Database connection failed: ' . $conn->connect_error);
+    die('âŒ Database connection failed: ' . $conn->connect_error);
 }
 $conn->set_charset("utf8mb4");
 
@@ -20,9 +21,9 @@ try {
         echo "Adding user_id column to thoughts table...\n";
         $conn->query("ALTER TABLE thoughts ADD COLUMN user_id VARCHAR(50) AFTER id");
         $conn->query("CREATE INDEX idx_user_id ON thoughts(user_id)");
-        echo "✅ Added user_id column to thoughts table\n\n";
+        echo "âœ… Added user_id column to thoughts table\n\n";
     } else {
-        echo "⚠️ user_id column already exists in thoughts table\n\n";
+        echo "âš ï¸ user_id column already exists in thoughts table\n\n";
     }
     
     // 2. Backup old reactions data (if needed)
@@ -33,7 +34,7 @@ try {
         // Create a backup table for old data
         $conn->query("CREATE TABLE IF NOT EXISTS reactions_backup LIKE reactions");
         $conn->query("INSERT INTO reactions_backup SELECT * FROM reactions");
-        echo "✅ Created backup of reactions table\n";
+        echo "âœ… Created backup of reactions table\n";
         
         // Now we need to expand reactions table to include user_id
         // First, drop the old reactions table and create new one
@@ -52,18 +53,19 @@ try {
         )";
         
         $conn->query($create_reactions_sql);
-        echo "✅ Created new reactions table with user_id support\n\n";
+        echo "âœ… Created new reactions table with user_id support\n\n";
     } else {
-        echo "⚠️ Reactions table already has new structure\n\n";
+        echo "âš ï¸ Reactions table already has new structure\n\n";
     }
     
-    echo "✅ Database migration completed successfully!\n";
+    echo "âœ… Database migration completed successfully!\n";
     echo "\nNote: Old reaction counts have been backed up in 'reactions_backup' table.\n";
     echo "Users can now react once per type per post.\n";
     
 } catch (Exception $e) {
-    echo "❌ Migration error: " . $e->getMessage() . "\n";
+    echo "âŒ Migration error: " . $e->getMessage() . "\n";
 }
 
 $conn->close();
 ?>
+
