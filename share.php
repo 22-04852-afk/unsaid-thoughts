@@ -53,83 +53,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     exit;
 }
 
-// Handle reaction updates via AJAX
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'react') {
-    header('Content-Type: application/json');
-    
-    $thought_id = (int)$_POST['thought_id'] ?? 0;
-    $reaction_type = $_POST['reaction_type'] ?? '';
-    
-    $valid_types = ['heart', 'hug', 'hurt', 'moon'];
-    if (!in_array($reaction_type, $valid_types) || $thought_id <= 0) {
-        echo json_encode(['success' => false, 'error' => 'Invalid parameters']);
-        exit;
-    }
-    
-    try {
-        $conn->begin_transaction();
-        
-        // Check if user already has a reaction on this post
-        $check_query = "SELECT type FROM reactions WHERE thought_id = ? AND user_id = ?";
-        $check_stmt = $conn->prepare($check_query);
-        $check_stmt->bind_param("is", $thought_id, $current_user_id);
-        $check_stmt->execute();
-        $check_result = $check_stmt->get_result();
-        $existing = $check_result->fetch_assoc();
-        
-        if ($existing) {
-            $existing_type = $existing['type'];
-            
-            // If clicking the same reaction - remove it (toggle off)
-            if ($existing_type === $reaction_type) {
-                $delete_query = "DELETE FROM reactions WHERE thought_id = ? AND user_id = ?";
-                $delete_stmt = $conn->prepare($delete_query);
-                $delete_stmt->bind_param("is", $thought_id, $current_user_id);
-                $delete_stmt->execute();
-                $action_type = 'removed';
-                $new_type = null;
-            } else {
-                // Different reaction - UPDATE to new type
-                $update_query = "UPDATE reactions SET type = ? WHERE thought_id = ? AND user_id = ?";
-                $update_stmt = $conn->prepare($update_query);
-                $update_stmt->bind_param("sis", $reaction_type, $thought_id, $current_user_id);
-                $update_stmt->execute();
-                $action_type = 'changed';
-                $new_type = $reaction_type;
-            }
-        } else {
-            // No existing reaction - INSERT new one
-            $insert_query = "INSERT INTO reactions (thought_id, user_id, type) VALUES (?, ?, ?)";
-            $insert_stmt = $conn->prepare($insert_query);
-            $insert_stmt->bind_param("iss", $thought_id, $current_user_id, $reaction_type);
-            $insert_stmt->execute();
-            $action_type = 'added';
-            $new_type = $reaction_type;
-        }
-        
-        $conn->commit();
-        
-        // Get updated counts for all reaction types
-        $count_query = "SELECT type, COUNT(*) as count FROM reactions WHERE thought_id = ? GROUP BY type";
-        $count_stmt = $conn->prepare($count_query);
-        $count_stmt->bind_param("i", $thought_id);
-        $count_stmt->execute();
-        $count_result = $count_stmt->get_result();
-        $counts = ['heart' => 0, 'hug' => 0, 'hurt' => 0, 'moon' => 0];
-        while ($row = $count_result->fetch_assoc()) {
-            $counts[$row['type']] = (int)$row['count'];
-        }
-        
-        echo json_encode(['success' => true, 'action' => $action_type, 'counts' => $counts, 'current_reaction' => $new_type]);
-    } catch (Exception $e) {
-        $conn->rollback();
-        echo json_encode(['success' => false, 'error' => 'Database error']);
-    }
-    exit;
-}
-
-// Get all thoughts sorted by reactions
-$sort_by = isset($_GET['sort']) ? $_GET['sort'] : 'recent';
+// Get all thoughts (recent first)
+$sort_by = 'recent';
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $per_page = 4;
 
@@ -137,17 +62,8 @@ $query = "SELECT t.id, t.content, t.mood, t.nickname, t.created_at,
           s.title as song_title, s.artist as song_artist, s.link as song_link
           FROM thoughts t
           LEFT JOIN songs s ON t.id = s.thought_id
-          WHERE t.user_id = '" . $conn->real_escape_string($current_user_id) . "'";
-
-if ($sort_by === 'loved') {
-    $query .= " GROUP BY t.id
-               ORDER BY (SELECT COUNT(*) FROM reactions WHERE thought_id = t.id AND type = 'heart') DESC, t.created_at DESC";
-} elseif ($sort_by === 'trending') {
-    $query .= " GROUP BY t.id
-               ORDER BY (SELECT COUNT(*) FROM reactions WHERE thought_id = t.id) DESC, t.created_at DESC";
-} else {
-    $query .= " ORDER BY t.created_at DESC";
-}
+          WHERE t.user_id = '" . $conn->real_escape_string($current_user_id) . "'
+          ORDER BY t.created_at DESC";
 
 // Count total thoughts by current user
 $count_result = $conn->query("SELECT COUNT(DISTINCT t.id) as total FROM thoughts t WHERE t.user_id = '" . $conn->real_escape_string($current_user_id) . "'");
@@ -178,8 +94,7 @@ while ($row = $result->fetch_assoc()) {
             'mood' => $row['mood'],
             'nickname' => $row['nickname'],
             'created_at' => $row['created_at'],
-            'song' => null,
-            'reactions' => ['heart' => 0, 'hug' => 0, 'hurt' => 0, 'moon' => 0]
+            'song' => null
         ];
     }
     if ($row['song_title']) {
@@ -191,30 +106,6 @@ while ($row = $result->fetch_assoc()) {
     }
 }
 
-// Fetch reactions for all thoughts BEFORE closing connection
-foreach ($thoughts as $thought_id => $thought) {
-    $reactions_query = "SELECT type, COUNT(*) as count FROM reactions WHERE thought_id = ? GROUP BY type";
-    $reactions_stmt = $conn->prepare($reactions_query);
-    $reactions_stmt->bind_param("i", $thought_id);
-    $reactions_stmt->execute();
-    $reactions_result = $reactions_stmt->get_result();
-    if ($reactions_result) {
-        while ($row = $reactions_result->fetch_assoc()) {
-            $thoughts[$thought_id]['reactions'][$row['type']] = (int)$row['count'];
-        }
-    }
-}
-
-// Fetch user's reaction for all thoughts (max one per post)
-$user_reactions = [];
-$user_reactions_query = "SELECT thought_id, type FROM reactions WHERE user_id = ?";
-$user_reactions_stmt = $conn->prepare($user_reactions_query);
-$user_reactions_stmt->bind_param("s", $current_user_id);
-$user_reactions_stmt->execute();
-$user_reactions_result = $user_reactions_stmt->get_result();
-while ($row = $user_reactions_result->fetch_assoc()) {
-    $user_reactions[$row['thought_id']] = $row['type'];
-}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -385,50 +276,6 @@ while ($row = $user_reactions_result->fetch_assoc()) {
             color: #999;
         }
 
-        /* Reactions */
-        .reactions {
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            gap: 2px;
-        }
-
-        .reaction-btn {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 2px;
-            padding: 4px 6px;
-            background: transparent;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 10px;
-            color: #999;
-            flex: 1;
-        }
-
-        .reaction-btn:hover {
-            background: #fff5f7;
-            transform: scale(1.1);
-        }
-
-        .reaction-btn.active-reaction {
-            background: #ffe6f0;
-            color: #ff6b9d;
-        }
-
-        .reaction-emoji {
-            font-size: 18px;
-        }
-
-        .reaction-count {
-            font-weight: 600;
-            font-size: 10px;
-        }
-
         /* Empty state */
         .empty-state {
             text-align: center;
@@ -510,25 +357,19 @@ while ($row = $user_reactions_result->fetch_assoc()) {
 <body>
     <?php
         $header_title = '✧ My Thoughts';
-        $header_subtitle = 'Your unsaid thoughts and how they touched hearts';
+        $header_subtitle = 'Your unsaid thoughts in one place';
         include 'header.php';
     ?>
 
     <div class="container">
         <!-- Page Title -->
-        <h1 class="page-title">✧ Reactions</h1>
-        <p class="subtitle">See how others responded to each thought.</p>
+        <h1 class="page-title">✧ My Thoughts</h1>
+        <p class="subtitle">Your private list of shared thoughts.</p>
 
         <!-- Sort Buttons -->
         <div class="sort-buttons">
-            <a href="share.php?sort=recent" class="sort-btn <?php echo $sort_by === 'recent' ? 'active' : ''; ?>">
+            <a href="share.php" class="sort-btn active">
                 🕐 Recent
-            </a>
-            <a href="share.php?sort=loved" class="sort-btn <?php echo $sort_by === 'loved' ? 'active' : ''; ?>">
-                ❤️ Most Loved
-            </a>
-            <a href="share.php?sort=trending" class="sort-btn <?php echo $sort_by === 'trending' ? 'active' : ''; ?>">
-                🔥 Trending
             </a>
         </div>
 
@@ -591,30 +432,6 @@ while ($row = $user_reactions_result->fetch_assoc()) {
                             </div>
                         <?php endif; ?>
 
-                        <!-- Reactions -->
-                        <div class="reactions">
-                            <?php 
-                            $reactions = $thought['reactions'];
-                            $reaction_data = [
-                                ['emoji' => '❤️', 'type' => 'heart', 'label' => 'Love'],
-                                ['emoji' => '🤗', 'type' => 'hug', 'label' => 'Hug'],
-                                ['emoji' => '💔', 'type' => 'hurt', 'label' => 'Hurt'],
-                                ['emoji' => '🌙', 'type' => 'moon', 'label' => 'Moon']
-                            ];
-                            ?>
-                            <?php foreach ($reaction_data as $reaction): ?>
-                                <?php 
-                                $is_user_reaction = isset($user_reactions[$thought['id']]) && $user_reactions[$thought['id']] === $reaction['type'];
-                                $btn_class = $is_user_reaction ? 'reaction-btn active-reaction' : 'reaction-btn';
-                                ?>
-                                <button class="<?php echo $btn_class; ?>" onclick="addReaction(<?php echo $thought['id']; ?>, '<?php echo $reaction['type']; ?>', this)">
-                                    <span class="reaction-emoji"><?php echo $reaction['emoji']; ?></span>
-                                    <span class="reaction-count" data-count="<?php echo $reactions[$reaction['type']]; ?>">
-                                        <?php echo $reactions[$reaction['type']]; ?>
-                                    </span>
-                                </button>
-                            <?php endforeach; ?>
-                        </div>
                     </div>
                 <?php endforeach; ?>
             <?php else: ?>
@@ -628,11 +445,11 @@ while ($row = $user_reactions_result->fetch_assoc()) {
         <!-- Pagination -->
         <?php if ($total_thoughts > 0): ?>
             <div class="pagination">
-                <button class="flip-btn" onclick="window.location.href='share.php?sort=<?php echo urlencode($sort_by); ?>&page=<?php echo max(1, $page - 1); ?>'" 
+                <button class="flip-btn" onclick="window.location.href='share.php?page=<?php echo max(1, $page - 1); ?>'" 
                     <?php echo $page <= 1 ? 'disabled' : ''; ?>>
                     ← Previous
                 </button>
-                <button class="flip-btn" onclick="window.location.href='share.php?sort=<?php echo urlencode($sort_by); ?>&page=<?php echo min($total_pages, $page + 1); ?>'" 
+                <button class="flip-btn" onclick="window.location.href='share.php?page=<?php echo min($total_pages, $page + 1); ?>'" 
                     <?php echo $page >= $total_pages ? 'disabled' : ''; ?>>
                     Next →
                 </button>
@@ -646,64 +463,6 @@ while ($row = $user_reactions_result->fetch_assoc()) {
     <?php include 'nav.php'; ?>
 
     <script>
-        function addReaction(thoughtId, reactionType, button) {
-            const formData = new FormData();
-            formData.append('action', 'react');
-            formData.append('thought_id', thoughtId);
-            formData.append('reaction_type', reactionType);
-
-            fetch('share.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Find all reaction buttons for this thought
-                    const parent = button.closest('.reactions');
-                    const allButtons = parent.querySelectorAll('.reaction-btn');
-                    
-                    // Update all button states and counts
-                    allButtons.forEach(btn => {
-                        const countSpan = btn.querySelector('.reaction-count');
-                        const emoji = btn.querySelector('.reaction-emoji').textContent;
-                        
-                        // Get reaction type from button's onclick attribute
-                        const onclickAttr = btn.getAttribute('onclick');
-                        const match = onclickAttr.match(/'(heart|hug|hurt|moon)'/);
-                        const btnReactionType = match ? match[1] : null;
-                        
-                        if (btnReactionType) {
-                            // Update count for this reaction type
-                            countSpan.textContent = data.counts[btnReactionType];
-                            
-                            // Update active state
-                            if (data.current_reaction === btnReactionType) {
-                                btn.classList.add('active-reaction');
-                            } else {
-                                btn.classList.remove('active-reaction');
-                            }
-                        }
-                    });
-                    
-                    // Animate the clicked button
-                    button.style.animation = 'pulse 0.3s ease';
-                    setTimeout(() => button.style.animation = '', 300);
-                }
-            })
-            .catch(error => console.error('Error:', error));
-        }
-
-        // Add pulse animation
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes pulse {
-                0%, 100% { transform: scale(1); }
-                50% { transform: scale(1.15); }
-            }
-        `;
-        document.head.appendChild(style);
-
         // Toggle music player embed
         function toggleMusicPlayer(button, songData) {
             const container = button.closest('.song-info').querySelector('.music-player-container');

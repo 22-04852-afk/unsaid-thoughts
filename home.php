@@ -57,13 +57,7 @@ try {
                 'mood' => htmlspecialchars($row['mood'] ?: 'Anonymous', ENT_QUOTES, 'UTF-8'),
                 'nickname' => htmlspecialchars($row['nickname'] ?: 'Anonymous', ENT_QUOTES, 'UTF-8'),
                 'created_at' => $row['created_at'],
-                'song' => null,
-                'reactions' => [
-                    'heart' => 0,
-                    'hug' => 0,
-                    'hurt' => 0,
-                    'moon' => 0
-                ]
+                'song' => null
             ];
         }
         
@@ -73,18 +67,6 @@ try {
                 'artist' => htmlspecialchars($row['song_artist'], ENT_QUOTES, 'UTF-8'),
                 'link' => htmlspecialchars($row['song_link'], ENT_QUOTES, 'UTF-8')
             ];
-        }
-    }
-    
-    // Fetch reaction counts for all thoughts
-    foreach ($thoughts as $thought_id => $thought) {
-        $reactions_query = "SELECT type, COUNT(*) as count FROM reactions WHERE thought_id = ? GROUP BY type";
-        $reactions_stmt = $conn->prepare($reactions_query);
-        $reactions_stmt->bind_param("i", $thought_id);
-        $reactions_stmt->execute();
-        $reactions_result = $reactions_stmt->get_result();
-        while ($reaction_row = $reactions_result->fetch_assoc()) {
-            $thoughts[$thought_id]['reactions'][$reaction_row['type']] = (int)$reaction_row['count'];
         }
     }
     
@@ -529,46 +511,6 @@ function formatDate($dateString) {
             font-weight: 500;
         }
 
-        .card-reactions {
-            padding: 0.6rem;
-            display: flex;
-            justify-content: space-between;
-            gap: 0.3rem;
-            border-top: 1px solid #FFE5F0;
-        }
-
-        .reaction-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.3rem;
-            padding: 0.6rem 0.8rem;
-            background-color: #FFF5F8;
-            border: 1px solid #FFE5F0;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            font-weight: 600;
-            transition: all 0.2s ease;
-            flex: 1;
-            color: #666;
-        }
-
-        .reaction-btn:hover {
-            background-color: #FFE5F0;
-            border-color: #FFB6D9;
-            transform: scale(1.05);
-        }
-
-        .reaction-icon {
-            font-size: 1rem;
-        }
-
-        .reaction-count {
-            font-size: 0.8rem;
-            min-width: 12px;
-        }
-
         /* Loading state */
         .loading-container {
             text-align: center;
@@ -787,24 +729,6 @@ function formatDate($dateString) {
                                 </div>
                             </div>
                         <?php endif; ?>
-                        <div class="card-reactions">
-                            <button class="reaction-btn" data-thought-id="<?php echo $thought['id']; ?>" data-reaction="heart">
-                                <span class="reaction-icon">❤️</span>
-                                <span class="reaction-count"><?php echo $thought['reactions']['heart']; ?></span>
-                            </button>
-                            <button class="reaction-btn" data-thought-id="<?php echo $thought['id']; ?>" data-reaction="hug">
-                                <span class="reaction-icon">🫂</span>
-                                <span class="reaction-count"><?php echo $thought['reactions']['hug']; ?></span>
-                            </button>
-                            <button class="reaction-btn" data-thought-id="<?php echo $thought['id']; ?>" data-reaction="hurt">
-                                <span class="reaction-icon">🥀</span>
-                                <span class="reaction-count"><?php echo $thought['reactions']['hurt']; ?></span>
-                            </button>
-                            <button class="reaction-btn" data-thought-id="<?php echo $thought['id']; ?>" data-reaction="moon">
-                                <span class="reaction-icon">🌙</span>
-                                <span class="reaction-count"><?php echo $thought['reactions']['moon']; ?></span>
-                            </button>
-                        </div>
                     </div>
                 <?php endforeach; ?>
                 <div class="end-scroll-message">✦ You've scrolled through all the moods for now</div>
@@ -818,37 +742,6 @@ function formatDate($dateString) {
     <?php include 'nav.php'; ?>
 
     <script>
-        // Handle reaction clicks
-        document.querySelectorAll('.reaction-btn').forEach(btn => {
-            btn.addEventListener('click', async function() {
-                const thoughtId = this.dataset.thoughtId;
-                const reactionType = this.dataset.reaction;
-
-                try {
-                    const response = await fetch('/unsaidthoughts-/php/react.php', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ 
-                            thought_id: thoughtId, 
-                            reaction_type: reactionType 
-                        })
-                    });
-
-                    const result = await response.json();
-                    
-                    if (result.status === 'success') {
-                        this.querySelector('.reaction-count').textContent = result.count;
-                        this.style.backgroundColor = '#FFB6D9';
-                        setTimeout(() => {
-                            this.style.backgroundColor = '#FFF5F8';
-                        }, 300);
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                }
-            });
-        });
-
         // Toggle music player embed
         function toggleMusicPlayer(button, songData) {
             const container = button.closest('.card-song-info').querySelector('.music-player-container');
