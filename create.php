@@ -110,6 +110,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/jpeg" href="/favicon.jpg">
+    <link rel="shortcut icon" href="/favicon.jpg">
     <title>Write a Thought - Unsaid Thoughts</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&display=swap');

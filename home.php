@@ -87,6 +87,8 @@ function formatDate($dateString) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="google-site-verification" content="jliFCP2iah90OIF311Awbbl9JdeNSm3F-vNrRcjcaBI" />
+    <link rel="icon" type="image/jpeg" href="/favicon.jpg">
+    <link rel="shortcut icon" href="/favicon.jpg">
     <title>Unsaid Thoughts - Home</title>
     <link rel="stylesheet" href="css/style.css">
     <style>
