@@ -19,7 +19,7 @@ try {
         throw new Exception('MySQL Connection Error: ' . $conn->connect_error . 
                           '<br><br>➡️ <strong>Fix:</strong> Start MySQL in XAMPP Control Panel');
     }
-     
+      
     $conn->set_charset("utf8mb4");
     
     // Fetch all thoughts with songs
