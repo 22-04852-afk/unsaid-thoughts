@@ -96,16 +96,33 @@ function getMusicPlatform($url) {
 
 // Helper function to format dates
 function formatDate($dateString) {
-    $date = new DateTime($dateString);
-    $now = new DateTime();
-    $diff = $now->diff($date);
-    
-    if ($diff->days == 0 && $diff->h == 0 && $diff->i < 1) return 'now';
-    if ($diff->days == 0 && $diff->h == 0) return $diff->i . 'm ago';
-    if ($diff->days == 0) return $diff->h . 'h ago';
-    if ($diff->days < 7) return $diff->days . 'd ago';
-    
-    return $date->format('M d');
+    $timestamp = strtotime($dateString);
+    if ($timestamp === false) {
+        return '';
+    }
+
+    $diffSeconds = max(0, time() - $timestamp);
+
+    if ($diffSeconds < 60) {
+        return 'now';
+    }
+
+    $minutes = floor($diffSeconds / 60);
+    if ($minutes < 60) {
+        return $minutes . 'm ago';
+    }
+
+    $hours = floor($diffSeconds / 3600);
+    if ($hours < 24) {
+        return $hours . 'h ago';
+    }
+
+    $days = floor($diffSeconds / 86400);
+    if ($days < 7) {
+        return $days . 'd ago';
+    }
+
+    return date('M d', $timestamp);
 }
 ?>
 <!DOCTYPE html>
